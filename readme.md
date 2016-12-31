@@ -1,8 +1,8 @@
 # Tent
 
-Experimental admin interface to static sites / notes / whatever. Editor for Markdown frontmatter fields and preview. Built with yo-yo. WIP.
+Experimental admin interface to static sites / notes / whatever. Editor for Markdown body, YAML frontmatter fields and a live preview. Built with yo-yo. WIP.
 
-![](screenshot.jpg)
+![tent admin interface](screenshot.jpg)
 
 ## Features
 
