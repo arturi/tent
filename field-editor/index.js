@@ -4,6 +4,8 @@ const html = require('yo-yo')
 const map = require('lodash/map')
 const css = require('sheetify')
 
+module.exports = fieldEditor
+
 const cssPrefix = css`
   :host * {
     font-family: -apple-system, BlinkMacSystemFont,
@@ -23,8 +25,8 @@ const cssPrefix = css`
 
   :host fieldgroup { 
    display: block;
-   margin-bottom: 15px;
-   padding: 15px;
+   margin-bottom: 10px;
+   padding: 10px;
   }
 
   :host fieldgroup fieldgroup  {
@@ -63,17 +65,17 @@ const cssPrefix = css`
     padding: 7px 5px;
     border: 1px solid black;
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
   }
 
   :host .body {
     border-width: 2px;
     height: 400px;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
   }
 `
 
-module.exports = function (doc, onChange) {
+function fieldEditor (doc, onChange) {
   doc = doc ? { data: doc.data, content: doc.content } : { data: {}, content: '' }
   onChange = onChange || function () {}
 
@@ -108,7 +110,7 @@ module.exports = function (doc, onChange) {
 
   function renderGroup (key, value, type, newPath) {
     return html`
-      <fieldgroup class="block">
+      <fieldgroup>
         <strong>${key}</strong>
         ${traverseFields(value, newPath)}
       </fieldgroup>
@@ -119,7 +121,6 @@ module.exports = function (doc, onChange) {
     return html`
       <fieldset>
         <label>${key}</label>
-
         ${key === 'description' 
           ? html`<textarea name="${key}" onchange=${(ev) => {
               updateField(ev.target.value, path)          

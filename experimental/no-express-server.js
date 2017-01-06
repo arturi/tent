@@ -5,7 +5,7 @@ const glob = require('glob')
 const Router = require('routes')
 const router = Router()
 const matter = require('gray-matter')
-// const jsonBody = require('body/json')
+const body = require('body/any')
 const ecstatic = require('ecstatic')
 
 const st = ecstatic(__dirname + '/public')
@@ -19,6 +19,11 @@ function getDocumentList (folder) {
 router.addRoute('/documents/:action/:id?', (req, res, match) => {
   const action = match.params.action
   const id = match.params.id
+
+  body(req, res, function (err, params) {
+    if (err) console.log(err)
+    console.log(params)
+  })
 
   if (action === 'edit') {
     res.setHeader('content-type', 'text/html')
