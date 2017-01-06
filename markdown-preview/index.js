@@ -36,8 +36,10 @@ function renderMarkdown (doc, opts) {
   if (opts.parseFrontmatter) {
     el = html`<div class="${styles.mdBody}"></div>`
     const parsedDoc = fastmatter(doc)
-    console.log(JSON.stringify(parsedDoc.attributes))
-    el.innerHTML = md.render(parsedDoc.body)
+    const attributes = parsedDoc.attributes
+    const title = attributes.title ? `<h1>${parsedDoc.attributes.title}</h1>` : ''
+
+    el.innerHTML = title + md.render(parsedDoc.body)
   } else {
     doc = doc || ''
     el = html`<div class="${styles.mdBody}"></div>`
