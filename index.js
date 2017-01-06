@@ -2,8 +2,8 @@
 const simpleEditor = require('./simple-editor')
 const markdownPreview = require('./markdown-preview')
 const api = require('./client-api.js')
-// const matter = require('gray-matter')
 const csjs = require('csjs')
+// const matter = require('gray-matter')
 const html = require('yo-yo')
 
 const styles = csjs`
@@ -93,10 +93,19 @@ function app () {
   tree = render(state)
   document.body.appendChild(tree)
 
+  const savedState = localStorage.getItem('tentState')
+  if (savedState) state = JSON.parse(savedState)
+
+  window.onbeforeunload = (ev) => {
+    localStorage.setItem('tentState', JSON.stringify(state))
+  }
+
   api.getList((err, res) => {
     if (err) console.log(err)
     console.log('loaded doc list')
     setState({ docList: res.data })
+
+    if (state.docId !== '') return
 
     api.getDoc(state.docList[0], (err, res) => {
       if (err) console.log(err)
