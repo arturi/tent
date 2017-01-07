@@ -2,7 +2,8 @@
 
 Experimental admin interface to static sites / notes / whatever. Editor for Markdown body, YAML frontmatter fields and a live preview. Built with yo-yo. WIP.
 
-![tent admin interface](screenshot.jpg)
+![tent admin interface: body and separate nested YAML fields](screenshot.jpg)
+![tent admin interface: YAML frontmatter and body](screenshot-2.jpg)
 
 ## Features
 
@@ -13,5 +14,5 @@ Experimental admin interface to static sites / notes / whatever. Editor for Mark
 
 ```sh
 npm install
-npm start 
+npm start
 ```
