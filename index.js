@@ -2,9 +2,9 @@
 const simpleEditor = require('./simple-editor')
 const markdownPreview = require('./markdown-preview')
 const api = require('./client-api.js')
-// const matter = require('gray-matter')
 const csjs = require('csjs')
-const html = require('yo-yo')
+const html = require('choo/html')
+const choo = require('choo')
 
 const styles = csjs`
   body, html {
@@ -58,113 +58,123 @@ const styles = csjs`
   }
 
   .editor {
-    // width: 45%;
     flex: 1;
     height: 100vh;
   }
 
   .preview {
-    // width: 45%;
     flex: 1;
     height: 100vh;
     overflow-y: auto;
   }
 `
+const app = choo()
 
-let state = {
-  doc: '',
-  docId: '',
-  docList: [],
-  showNewDoc: false
-}
-let tree = ''
-
-function setState (statePatch) {
-  state = Object.assign({}, state, statePatch)
-  update()
-}
-
-function update () {
-  const newTree = render(state)
-  html.update(tree, newTree)
-}
-
-function app () {
-  tree = render(state)
-  document.body.appendChild(tree)
-
-  api.getList((err, res) => {
-    if (err) console.log(err)
-    console.log('loaded doc list')
-    setState({ docList: res.data })
-
-    api.getDoc(state.docList[0], (err, res) => {
-      if (err) console.log(err)
-      console.log('loaded first doc')
-      setState({ doc: res.data, docId: state.docList[0] })
-    })
-  })
-}
-
-function render (state) {
-  const { doc, docId, docList } = state
-
-  return html`<main class=${styles.main}>
-    ${state.showNewDoc
-      ? html`<div>
-        <h4>create new document</h4>
-        <input type="text" placeholder="path/name" onchange=${(ev) => {
-          setState({newDocName: ev.target.value})
-        }}/>
-        <button onclick=${() => {
-          api.saveDoc(state.newDocName, '', (err, res) => {
-            console.log(res.status)
-
-            api.getList((err, res) => {
-              if (err) console.log(err)
-              console.log('loaded doc list')
-              setState({ docList: res.data })
-            })
-
-            api.getDoc(state.newDocName, (err, res) => {
-              setState({ doc: res.data, docId: state.newDocName })
-            })
-          })
-        }}>create</button>
-      </div>`
-      : null
+app.model({
+  state: {
+    doc: '',
+    docId: '',
+    docList: [],
+    showNewDoc: false
+  },
+  subscriptions: {
+    start: (send, done) => {
+      console.log('start like an animal')
+      send('loadDocList', () => {
+        send('loadDoc', null, done)
+      })
     }
-    <ul class=${styles.list}>
-      <li>
-        <button style="color: red;" onclick=${() => {
-          setState({showNewDoc: !state.showNewDoc})
-        }}>+ new</button>
-      </li>
-
-      ${docList.map((docId) => {
-        return html`<li class="${state.docId === docId ? styles.active : ''}">
-          <button onclick=${(ev) => {
-            api.getDoc(docId, (err, res) => {
-              setState({ doc: res.data, docId: docId })
-            })
-          }}>${docId}</button></li>`
-      })}
-    </ul>
-    <div class="${styles.editor}">
-      ${simpleEditor(doc, (updatedDoc) => {
-        setState({doc: updatedDoc})
-        api.saveDoc(docId, updatedDoc, (err, res) => {
+  },
+  effects: {
+    loadDocList: (state, data, send, done) => {
+      api.getList((err, res) => {
+        if (err) console.log(err)
+        console.log('loaded doc list')
+        send('updateDocList', res.data, done)
+      })
+    },
+    loadDoc: (state, data, send, done) => {
+      const docId = data || state.docList[0]
+      api.getDoc(docId, (err, res) => {
+        if (err) console.log(err)
+        console.log('loaded doc')
+        send('updateDoc', { doc: res.data, docId: docId }, done)
+      })
+    },
+    saveDoc: (state, data, send, done) => {
+      send('updateDoc', { docId: data.docId, doc: data.updatedDoc }, () => {
+        api.saveDoc(data.docId, data.updatedDoc, (err, res) => {
           console.log(res.status)
+          done()
         })
-      })}
-    </div>
-    <div class="${styles.preview}">
-      ${markdownPreview(doc, { parseFrontmatter: true } )}
-    </div>
-  </main>`
+      })
+    },
+    newDoc: (state, data, send, done) => {
+      const docId = data
+      console.log('new doc', docId)
+      send('saveDoc', { docId: docId, updatedDoc: '' }, () => {
+        send('loadDocList', () => {
+          send('loadDoc', docId, () => {
+            send('showNewDoc')
+          })
+        })
+      })
+    }
+  },
+  reducers: {
+    updateDocList: (state, data) => {
+      return { docList: data }
+    },
+    updateDoc: (state, data) => {
+      return { doc: data.doc, docId: data.docId }
+    },
+    showNewDoc: (state, data) => {
+      return { showNewDoc: !state.showNewDoc }
+    }
+  }
+})
+
+function mainView (state, prev, send) {
+  // const { doc, docList } = state
+
+  let newDocName = ''
+
+  return html`
+    <main class=${styles.main}>
+      ${state.showNewDoc
+        ? html`<div>
+          <h4>create new document</h4>
+          <input type="text" placeholder="path/name" onchange=${(ev) => newDocName = ev.target.value}/>
+          <button onclick=${() => send('newDoc', newDocName)}>create</button>
+        </div>`
+        : null
+      }
+      <ul class=${styles.list}>
+        <li>
+          <button style="color: red;" onclick=${() => send('showNewDoc')}>+ new</button>
+        </li>
+
+        ${state.docList.map((docId) => {
+          return html`<li class="${state.docId === docId ? styles.active : ''}">
+            <button onclick=${(ev) => send('loadDoc', docId)}>${docId}</button></li>`
+        })}
+      </ul>
+      <div class="${styles.editor}">
+        ${simpleEditor(state.doc, (updatedDoc) => {
+          send('saveDoc', {docId: state.docId, updatedDoc: updatedDoc})
+        })}
+      </div>
+      <div class="${styles.preview}">
+        ${markdownPreview(state.doc, { parseFrontmatter: true } )}
+      </div>
+    </main>
+  `
 }
 
-app()
+app.router(['/', mainView])
+
+const tree = app.start()
+document.body.appendChild(tree)
 
 // return html`
 //   <main>
