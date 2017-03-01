@@ -2,6 +2,8 @@
 const simpleEditor = require('./simple-editor')
 const markdownPreview = require('./markdown-preview')
 const api = require('./client-api.js')
+const debounce = require('lodash.debounce')
+// const throttle = require('lodash/throttle')
 const csjs = require('csjs')
 const html = require('choo/html')
 const choo = require('choo')
@@ -78,10 +80,15 @@ app.model({
     showNewDoc: false
   },
   subscriptions: {
-    start: (send, done) => {
+    initialize: (send, done) => {
       console.log('start like an animal')
+
+      window.onbeforeunload = (ev) => {
+        send('saveState', done)
+      }
+
       send('loadDocList', () => {
-        send('loadDoc', null, done)
+        send('loadLastOpenDoc', done)
       })
     }
   },
@@ -102,23 +109,33 @@ app.model({
       })
     },
     saveDoc: (state, data, send, done) => {
-      send('updateDoc', { docId: data.docId, doc: data.updatedDoc }, () => {
-        api.saveDoc(data.docId, data.updatedDoc, (err, res) => {
-          console.log(res.status)
-          done()
-        })
+      console.log('saving...')
+      api.saveDoc(data.docId, data.doc, (err, res) => {
+        console.log(res.status)
+        done()
       })
     },
     newDoc: (state, data, send, done) => {
       const docId = data
       console.log('new doc', docId)
-      send('saveDoc', { docId: docId, updatedDoc: '' }, () => {
+      send('saveDoc', { docId: docId, doc: '' }, () => {
         send('loadDocList', () => {
           send('loadDoc', docId, () => {
-            send('showNewDoc')
+            send('showNewDoc', done)
           })
         })
       })
+    },
+    saveState: (state, data, send, done) => {
+      localStorage.setItem('tentState', JSON.stringify(state))
+    },
+    loadLastOpenDoc: (state, data, send, done) => {
+      const savedState = JSON.parse(localStorage.getItem('tentState'))
+      console.log('yes, some saved state: ', savedState)
+      if (savedState && savedState.docId) {
+        return send('loadDoc', savedState.docId, done)
+      }
+      return send('loadDoc', null, done)
     }
   },
   reducers: {
@@ -134,9 +151,14 @@ app.model({
   }
 })
 
-function mainView (state, prev, send) {
-  // const { doc, docList } = state
+function saveAndUpdateDoc (send, docId, updatedDoc) {
+  send('saveDoc', { docId: docId, doc: updatedDoc })
+  send('updateDoc', { docId: docId, doc: updatedDoc })
+}
 
+const debouncedSaveAndUpdateDoc = debounce(saveAndUpdateDoc, 1000)
+
+function mainView (state, prev, send) {
   let newDocName = ''
 
   return html`
@@ -150,9 +172,7 @@ function mainView (state, prev, send) {
         : null
       }
       <ul class=${styles.list}>
-        <li>
-          <button style="color: red;" onclick=${() => send('showNewDoc')}>+ new</button>
-        </li>
+        <li><button onclick=${() => send('showNewDoc')}>+ new</button></li>
 
         ${state.docList.map((docId) => {
           return html`<li class="${state.docId === docId ? styles.active : ''}">
@@ -161,7 +181,7 @@ function mainView (state, prev, send) {
       </ul>
       <div class="${styles.editor}">
         ${simpleEditor(state.doc, (updatedDoc) => {
-          send('saveDoc', {docId: state.docId, updatedDoc: updatedDoc})
+          debouncedSaveAndUpdateDoc(send, state.docId, updatedDoc)
         })}
       </div>
       <div class="${styles.preview}">
