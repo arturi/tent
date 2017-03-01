@@ -22,7 +22,10 @@ app.get('/api/documents/:id', (req, res) => {
   console.log('get!')
   const id = req.params.id
   fs.readFile(`${DOCUMENTS_DIR}/${id}`, 'utf-8', (err, file) => {
-    if (err) throw err
+    if (err) {
+      console.log(err)
+      return res.json({status: 'error', err: err})
+    }
     res.json({status: 'ok', data: file})
   })
 })
