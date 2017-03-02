@@ -1,4 +1,8 @@
-const html = require('yo-yo')
+// const html = require('yo-yo')
+const { h, app } = require('hyperapp')
+const hyperx = require('hyperx')
+const html = hyperx(h)
+
 const MarkdownIt = require('markdown-it')
 const MarkdownItTaskLists = require('markdown-it-task-lists')
 const md = MarkdownIt({html: true, breaks: true})
@@ -31,22 +35,24 @@ function renderMarkdown (doc, opts) {
   }
 
   opts = Object.assign({}, defaultOpts, opts)
-  let el
+  let element
 
   if (opts.parseFrontmatter) {
-    el = html`<div class="${styles.mdBody}"></div>`
     const parsedDoc = fastmatter(doc)
     const attributes = parsedDoc.attributes || {}
     const title = attributes.title ? `<h1>${parsedDoc.attributes.title}</h1>` : ''
 
-    el.innerHTML = title + md.render(parsedDoc.body)
+    element = html`<div class="${styles.mdBody}" onupdate=${(el) => {
+      el.innerHTML = title + md.render(parsedDoc.body)
+    }}></div>`
   } else {
     doc = doc || ''
-    el = html`<div class="${styles.mdBody}"></div>`
-    el.innerHTML = md.render(doc)
+    element = html`<div class="${styles.mdBody}" oncreate=${(el) => {
+      el.innerHTML = el.innerHTML = md.render(doc)
+    }}>bla</div>`
   }
 
-  return el
+  return element
 }
 
 module.exports = renderMarkdown

@@ -5,8 +5,12 @@ const api = require('./client-api.js')
 const debounce = require('lodash.debounce')
 // const throttle = require('lodash/throttle')
 const csjs = require('csjs')
-const html = require('choo/html')
-const choo = require('choo')
+// const html = require('choo/html')
+// const choo = require('choo')
+
+const { h, app } = require('hyperapp')
+const hyperx = require('hyperx')
+const html = hyperx(h)
 
 const styles = csjs`
   body, html {
@@ -70,183 +74,161 @@ const styles = csjs`
     overflow-y: auto;
   }
 `
-const app = choo()
+// const app = choo()
 
-app.model({
-  state: {
-    doc: '',
-    docId: '',
-    docList: [],
-    showNewDoc: false
-  },
-  subscriptions: {
-    initialize: (send, done) => {
-      console.log('start like an animal')
-
-      window.onbeforeunload = (ev) => {
-        send('saveState', done)
-      }
-
-      send('loadDocList', () => {
-        send('loadLastOpenDoc', done)
-      })
-    }
-  },
-  effects: {
-    loadDocList: (state, data, send, done) => {
-      api.getList((err, res) => {
-        if (err) console.log(err)
-        console.log('loaded doc list')
-        send('updateDocList', res.data, done)
-      })
-    },
-    loadDoc: (state, data, send, done) => {
-      const docId = data || state.docList[0]
-      api.getDoc(docId, (err, res) => {
-        if (err) console.log(err)
-        console.log('loaded doc')
-        send('updateDoc', { doc: res.data, docId: docId }, done)
-      })
-    },
-    saveDoc: (state, data, send, done) => {
-      console.log('saving...')
-      api.saveDoc(data.docId, data.doc, (err, res) => {
-        console.log(res.status)
-        done()
-      })
-    },
-    newDoc: (state, data, send, done) => {
-      const docId = data
-      console.log('new doc', docId)
-      send('saveDoc', { docId: docId, doc: '' }, () => {
-        send('loadDocList', () => {
-          send('loadDoc', docId, () => {
-            send('showNewDoc', done)
-          })
-        })
-      })
-    },
-    saveState: (state, data, send, done) => {
-      localStorage.setItem('tentState', JSON.stringify(state))
-    },
-    loadLastOpenDoc: (state, data, send, done) => {
-      const savedState = JSON.parse(localStorage.getItem('tentState'))
-      console.log('yes, some saved state: ', savedState)
-      if (savedState && savedState.docId) {
-        return send('loadDoc', savedState.docId, done)
-      }
-      return send('loadDoc', null, done)
-    }
-  },
-  reducers: {
-    updateDocList: (state, data) => {
-      return { docList: data }
-    },
-    updateDoc: (state, data) => {
-      return { doc: data.doc, docId: data.docId }
-    },
-    showNewDoc: (state, data) => {
-      return { showNewDoc: !state.showNewDoc }
-    }
-  }
-})
-
-function saveAndUpdateDoc (send, docId, updatedDoc) {
-  send('saveDoc', { docId: docId, doc: updatedDoc })
-  send('updateDoc', { docId: docId, doc: updatedDoc })
+const model = {
+  doc: '',
+  docId: '',
+  docList: [],
+  showNewDoc: false
 }
 
-const debouncedSaveAndUpdateDoc = debounce(saveAndUpdateDoc, 1000)
+const subscriptions = {
+  initialize: (model, actions, error) => {
+    console.log('start like an animal')
 
-function mainView (state, prev, send) {
+    window.onbeforeunload = (ev) => {
+      actions.saveState()
+    }
+
+    actions.loadDocList()
+      .then(actions.loadLastOpenDoc)
+  }
+}
+
+const reducers = {
+  updateDocList: (model, data, params) => {
+    return { docList: data }
+  },
+  updateDoc: (model, data, params) => {
+    return { doc: data.doc, docId: data.docId }
+  },
+  showNewDoc: (model, data, params) => {
+    return { showNewDoc: !state.showNewDoc }
+  }
+}
+
+const effects = {
+  loadDocList: (model, actions, data, error) => {
+    return new Promise(function (resolve, reject) {
+      api.getList((err, res) => {
+        if (err) reject(err)
+        console.log('loaded doc list')
+        actions.updateDocList(res.data)
+        return resolve(res.data)
+      })
+    })
+  },
+  loadDoc: (model, actions, data, error) => {
+    const docId = data || model.docList[0]
+    return new Promise(function (resolve, reject) {
+      api.getDoc(docId, (err, res) => {
+        if (err) reject(err)
+        console.log('loaded doc')
+        actions.updateDoc({ doc: res.data, docId: docId })
+        resolve(res)
+      })
+    })
+  },
+  saveDoc: (model, actions, data, error) => {
+    console.log('saving...')
+    console.log(data.doc)
+    return new Promise(function (resolve, reject) {
+      api.saveDoc(data.docId, data.doc, (err, res) => {
+        if (err) reject(err)
+        console.log(res)
+        resolve(res)
+      })
+    })
+  },
+  newDoc: (model, actions, data, error) => {
+    const docId = data
+    console.log('new doc', docId)
+
+    return actions.saveDoc({ docId: docId, doc: '' })
+      .then(actions.loadDocList)
+      .then(() => actions.loadDoc(docId))
+      .then(actions.showNewDoc)
+
+    // actions.saveDoc({ docId: docId, doc: '' }), () => {
+    //   actions.loadDocList', () => {
+    //     actions.loadDoc', docId, () => {
+    //       send('showNewDoc', done)
+    //     })
+    //   })
+    // }
+  },
+  saveState: (model, actions, data, error) => {
+    localStorage.setItem('tentState', JSON.stringify(model))
+  },
+  loadLastOpenDoc: (model, actions, data, error) => {
+    const savedState = JSON.parse(localStorage.getItem('tentState'))
+    console.log('yes, some saved state: ', savedState)
+    if (savedState && savedState.docId) {
+      return actions.loadDoc(savedState.docId)
+    }
+    return actions.loadDoc()
+  }
+}
+
+function saveDoc (actions, data) {
+  // console.log(data)
+  actions.saveDoc(data)
+  // actions.updateDoc(data)
+}
+const debouncedSaveDoc = debounce(saveDoc, 1000)
+
+function view (model, actions) {
   let newDocName = ''
+
+  const editor = simpleEditor(model.doc, (updatedDoc) => {
+    const data = {docId: model.docId, doc: updatedDoc}
+    actions.updateDoc(data)
+    // actions.saveDoc(data)
+    // saveDoc(actions, data)
+  })
 
   return html`
     <main class=${styles.main}>
-      ${state.showNewDoc
+      ${model.showNewDoc
         ? html`<div>
           <h4>create new document</h4>
           <input type="text" placeholder="path/name" onchange=${(ev) => newDocName = ev.target.value}/>
-          <button onclick=${() => send('newDoc', newDocName)}>create</button>
+          <button onclick=${() => actions.newDoc(newDocName)}>create</button>
         </div>`
         : null
       }
       <ul class=${styles.list}>
-        <li><button onclick=${() => send('showNewDoc')}>+ new</button></li>
+        <li><button onclick=${() => actions.showNewDoc()}>+ new</button></li>
 
-        ${state.docList.map((docId) => {
-          return html`<li class="${state.docId === docId ? styles.active : ''}">
-            <button onclick=${(ev) => send('loadDoc', docId)}>${docId}</button></li>`
+        ${model.docList.map((docId) => {
+          return html`<li class="${model.docId === docId ? styles.active : ''}">
+            <button onclick=${(ev) => actions.loadDoc(docId)}>${docId}</button></li>`
         })}
       </ul>
       <div class="${styles.editor}">
-        ${simpleEditor(state.doc, (updatedDoc) => {
-          debouncedSaveAndUpdateDoc(send, state.docId, updatedDoc)
-        })}
+        <div oncreate=${(el) => {
+          // console.log('update!!!')
+          // const editor = simpleEditor(model.doc, (updatedDoc) => {
+          //   debouncedSaveAndUpdateDoc(actions, {docId: model.docId, doc: updatedDoc})
+          // })
+          // console.log(editor)
+          // el.parentNode.replaceChild(editor, el)
+          el.appendChild(editor.el)
+        }} onupdate=${() => editor.update(model.doc)}></div>
       </div>
       <div class="${styles.preview}">
-        ${markdownPreview(state.doc, { parseFrontmatter: true } )}
+        ${markdownPreview(model.doc, { parseFrontmatter: true } )}
       </div>
     </main>
   `
 }
 
-app.router(['/', mainView])
+const myApp = app({ model: model, view: view, reducers: reducers, effects: effects, subscriptions: subscriptions})
 
-const tree = app.start()
-document.body.appendChild(tree)
-
-// return html`
-//   <main>
-//     ${Object.keys(attributes).map((attribute) => {
-//       if (attribute === 'blocks') {
-//         const blocks = attributes[attribute]
-//         return blocks.map((block, index) => {
-//           return renderBlock(block, index)
-//         })
-//       } else {
-//         // console.log(attribute)
-//         return renderField(attribute, attributes[attribute])
-//       }
-//     })}
-//   </main>
-// `
-
-// function renderBlock (block, blockIndex) {
-//   // console.log(block)
-//   if (!block.type) return
-//   return html`
-//     <fieldgroup class="block">
-//       <strong>${block.type}</strong>
-//       ${Object.keys(block).map((field, fieldIndex) => {
-//         if (field === 'type') return
-//         const key = field
-//         const value = block[field]
-//         const path = { blockIndex, fieldIndex }
-//         return renderField(key, value, path)
-//       })}
-//     </fieldgroup>
-//   `
-// }
-
-// function renderField (key, value, source) {
-//   return html`
-//     <fieldset>
-//       <label>${key}</label>
-
-//       ${key === 'description'
-//         ? html`<textarea name="${key}" onchange=${(ev) => {
-//             updateField(ev.target.value)
-//           }}>${value}</textarea>`
-//         : html`<input name="${key}" value="${value}" onchange=${(ev) => {
-//             updateField(ev.target.value)
-//           }}>`
-//       }
-//     </fireldset>
-//   `
-
-//   function updateField (newValue) {
-//     state.blocks[source.blockIndex][key] = newValue
-//     update(state)
-//   }
+// function editMe (content) {
+//   const editorEl = simpleEditor(content, (updatedDoc) => {
+//     debouncedSaveAndUpdateDoc(actions, {docId: model.docId, updatedDoc: updatedDoc})
+//   })
+//   document.body.appendChild(editorEl)
 // }

@@ -27,30 +27,22 @@ const styles = csjs`
 module.exports = simpleEditor
 
 function simpleEditor (doc, onChange) {
-  // doc = doc ? { data: doc.data, content: doc.content } : { data: {}, content: '' }
   doc = doc || ''
   onChange = onChange || function () {}
 
   const el = render(doc)
-  return el
+  return {
+    el,
+    update
+  }
 
   function update (doc) {
+    console.log('update editor', doc)
     const newEl = render(doc)
     html.update(el, newEl)
   }
 
-  function render (doc) {
-    // const data = doc.data
-    const content = doc
-
-    return html`
-      <div>
-        ${renderBodyEditor(content)}
-      </div>
-    `
-  }
-
-  function renderBodyEditor (content) {
+  function render (content) {
     return html`<textarea class="${styles.body}" onkeyup=${updateBody}>${content}</textarea>`
 
     function updateBody (e) {
