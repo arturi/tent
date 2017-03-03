@@ -208,12 +208,6 @@ function view (model, actions) {
       </ul>
       <div class="${styles.editor}">
         <div oncreate=${(el) => {
-          // console.log('update!!!')
-          // const editor = simpleEditor(model.doc, (updatedDoc) => {
-          //   debouncedSaveAndUpdateDoc(actions, {docId: model.docId, doc: updatedDoc})
-          // })
-          // console.log(editor)
-          // el.parentNode.replaceChild(editor, el)
           el.appendChild(editor.el)
         }} onupdate=${() => editor.update(model.doc)}></div>
       </div>
