@@ -1,4 +1,3 @@
-// const html = require('yo-yo')
 const { h, app } = require('hyperapp')
 const hyperx = require('hyperx')
 const html = hyperx(h)
@@ -27,6 +26,14 @@ const styles = csjs`
   .mdBody img {
     max-width: 100%;
   }
+
+  .mdBody code {
+    padding: 0.2em 0.3em;
+    font-family: inherit;
+    font-size: 90%;
+    border-radius: 3px;
+    background-color: rgba(27,31,35,0.05);
+  }
 `
 
 function renderMarkdown (doc, opts) {
@@ -35,6 +42,7 @@ function renderMarkdown (doc, opts) {
   }
 
   opts = Object.assign({}, defaultOpts, opts)
+
   let element
 
   if (opts.parseFrontmatter) {
