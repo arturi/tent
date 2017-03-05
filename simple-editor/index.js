@@ -31,24 +31,31 @@ function simpleEditor (doc, onChange) {
   onChange = onChange || function () {}
 
   const el = render(doc)
-  return {
-    el,
-    update
-  }
 
-  function update (doc) {
-    console.log('update editor', doc)
+  function update (doc, elem) {
     const newEl = render(doc)
+
+    // If `elem` is passed in, update that,
+    // if not, update the one `yo-yo keeps reference to.
+    // This is needed for yo-yo element to work with virtual-dom
+    if (elem) {
+      return html.update(elem, newEl)
+    }
+
     html.update(el, newEl)
   }
 
   function render (content) {
-    return html`<textarea class="${styles.body}" onkeyup=${updateBody}>${content}</textarea>`
+    return html`<div>
+      <textarea class="${styles.body}" onkeyup=${updateBody}>${content}</textarea>
+    </div>`
 
     function updateBody (e) {
       doc = e.target.value
       onChange(doc)
-      update(doc)
+      // update(doc)
     }
   }
+
+  return { el, update }
 }
