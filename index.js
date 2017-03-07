@@ -60,6 +60,22 @@ const styles = csjs`
     font-size: inherit;
   }
 
+  .newDoc {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    border: 1px solid #b9b9b9;
+    border-radius: 3px;
+    background-color: white;
+    z-index: 10;
+  }
+
+  .newDocVisible {
+    display: block;
+  }
+
   .main {
     display: flex;
     justify-content: center;
@@ -117,7 +133,7 @@ const model = {
   doc: '',
   docId: '',
   docList: [],
-  showNewDoc: false
+  showNewDocPopOver: false
 }
 
 const subscriptions = [
@@ -138,8 +154,8 @@ const actions = {
   updateDoc: (model, data, actions, error) => {
     return { doc: data.doc, docId: data.docId }
   },
-  showNewDoc: (model, data, actions, error) => {
-    return { showNewDoc: !state.showNewDoc }
+  toggleNewDocPopover: (model, data, actions, error) => {
+    return { showNewDocPopOver: data }
   },
   loadDocList: (model, data, actions, error) => {
     return new Promise((resolve, reject) => {
@@ -185,7 +201,7 @@ const actions = {
     return actions.saveDoc({ docId: docId, doc: '' })
       .then(actions.loadDocList)
       .then(() => actions.loadDoc(docId))
-      .then(actions.showNewDoc)
+      .then(() => actions.toggleNewDocPopover(false))
   },
   saveState: (model, data, actions, error) => {
     localStorage.setItem('tentState', JSON.stringify(model))
@@ -224,25 +240,24 @@ function view (model, actions) {
 
   return html`
     <main class=${styles.main}>
-      ${model.showNewDoc
-        ? html`<div>
-          <h4>Create new document</h4>
-          <input type="text" placeholder="path/name" onchange=${(ev) => newDocName = ev.target.value}/>
-          <button onclick=${() => actions.newDoc(newDocName)}>create</button>
-        </div>`
-        : null
-      }
-      <ul class=${styles.list}>
-        <li><button onclick=${() => actions.showNewDoc()}>+ new</button></li>
+      <div class="${styles.newDoc} ${model.showNewDocPopOver ? styles.newDocVisible : ''}">
+        <h4>Create new document</h4>
+        <input type="text" placeholder="path/name" onchange=${(ev) => newDocName = ev.target.value}/>
+        <button onclick=${() => actions.newDoc(newDocName)}>create</button>
+      </div>
 
+      <ul class=${styles.list}>
+        <li><button onclick=${() => actions.toggleNewDocPopover(true)}>+ new</button></li>
         ${model.docList.map((docId) => {
           return html`<li class="${model.docId === docId ? styles.active : ''}">
             <button onclick=${(ev) => actions.loadDoc(docId)}>${docId}</button></li>`
         })}
       </ul>
+
       <div class="${styles.editor}">
         ${Editor(model, actions)}
       </div>
+
       <div class="${styles.preview}">
         ${markdownPreview(model.doc, { parseFrontmatter: true } )}
       </div>
