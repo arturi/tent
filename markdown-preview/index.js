@@ -50,14 +50,14 @@ function renderMarkdown (doc, opts) {
     const attributes = parsedDoc.attributes || {}
     const title = attributes.title ? `<h1>${parsedDoc.attributes.title}</h1>` : ''
 
-    element = html`<div class="${styles.mdBody}" onupdate=${(el) => {
+    element = html`<div class="${styles.mdBody}" onUpdate=${(el) => {
       el.innerHTML = title + md.render(parsedDoc.body)
     }}></div>`
   } else {
     doc = doc || ''
-    element = html`<div class="${styles.mdBody}" oncreate=${(el) => {
+    element = html`<div class="${styles.mdBody}" onUpdate=${(el) => {
       el.innerHTML = el.innerHTML = md.render(doc)
-    }}>bla</div>`
+    }}></div>`
   }
 
   return element

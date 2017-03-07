@@ -120,50 +120,42 @@ const model = {
   showNewDoc: false
 }
 
-const subscriptions = {
-  initialize: (model, actions, error) => {
-    // console.log('Start like an animal!')
+const subscriptions = [
+  (model, actions, error) => {
     log('Start like an animal!')
 
-    window.onbeforeunload = (ev) => {
-      actions.saveState()
-    }
+    window.onbeforeunload = (ev) => actions.saveState()
 
     actions.loadDocList()
       .then(actions.loadLastOpenDoc)
   }
-}
+]
 
-const reducers = {
-  updateDocList: (model, data, params) => {
+const actions = {
+  updateDocList: (model, data, actions, error) => {
     return { docList: data }
   },
-  updateDoc: (model, data, params) => {
+  updateDoc: (model, data, actions, error) => {
     return { doc: data.doc, docId: data.docId }
   },
-  showNewDoc: (model, data, params) => {
+  showNewDoc: (model, data, actions, error) => {
     return { showNewDoc: !state.showNewDoc }
-  }
-}
-
-const effects = {
-  loadDocList: (model, actions, data, error) => {
-    return new Promise(function (resolve, reject) {
+  },
+  loadDocList: (model, data, actions, error) => {
+    return new Promise((resolve, reject) => {
       api.getList((err, res) => {
         if (err) reject(err)
-        // console.log('Loaded doc list')
         log('Loaded doc list')
         actions.updateDocList(res.data)
         return resolve(res.data)
       })
     })
   },
-  loadDoc: (model, actions, data, error) => {
+  loadDoc: (model, data, actions, error) => {
     const docId = data || model.docList[0]
-    return new Promise(function (resolve, reject) {
+    return new Promise((resolve, reject) => {
       api.getDoc(docId, (err, res) => {
         if (err) reject(err)
-        // console.log('Loaded doc:', docId)
         log('Loaded doc: ' + docId)
         actions.updateDoc({ doc: res.data, docId: docId })
         actions.updateEditor(model, actions, data, error)
@@ -171,13 +163,11 @@ const effects = {
       })
     })
   },
-  updateEditor: (model, actions, data, error) => {
+  updateEditor: (model, data, actions, error) => {
     log('Updating editor')
-    // console.log('Updating editor')
     editor.update(model.doc, editorEl)
   },
-  saveDoc: (model, actions, data, error) => {
-    // console.log('Saving:', data.docId)
+  saveDoc: (model, data, actions, error) => {
     log('Saving: ' + data.docId)
     return new Promise(function (resolve, reject) {
       api.saveDoc(data.docId, data.doc, (err, res) => {
@@ -188,9 +178,8 @@ const effects = {
       })
     })
   },
-  newDoc: (model, actions, data, error) => {
+  newDoc: (model, data, actions, error) => {
     const docId = data
-    // console.log('Creating new doc:', docId)
     log('Creating new doc: ' + docId)
 
     return actions.saveDoc({ docId: docId, doc: '' })
@@ -198,15 +187,14 @@ const effects = {
       .then(() => actions.loadDoc(docId))
       .then(actions.showNewDoc)
   },
-  saveState: (model, actions, data, error) => {
+  saveState: (model, data, actions, error) => {
     localStorage.setItem('tentState', JSON.stringify(model))
   },
-  loadLastOpenDoc: (model, actions, data, error) => {
+  loadLastOpenDoc: (model, data, actions, error) => {
     const savedStateString = localStorage.getItem('tentState')
     const savedState = JSON.parse(savedStateString)
     let docId
     if (savedState && savedState.docId) {
-      // console.log('Found some saved state:', savedState)
       log('Found some saved state: ' + savedStateString)
       docId = savedState.docId
     }
@@ -224,7 +212,7 @@ function Editor (model, actions) {
     _saveDoc(data, actions)
   })
 
-  return html`<div oncreate=${(el) => {
+  return html`<div onCreate=${(el) => {
       el.appendChild(editor.el)
       editorEl = el
     }}>
@@ -265,7 +253,6 @@ function view (model, actions) {
 const myApp = app({
   model: model,
   view: view,
-  reducers: reducers,
-  effects: effects,
+  actions: actions,
   subscriptions: subscriptions
 })
