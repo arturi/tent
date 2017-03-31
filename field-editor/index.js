@@ -23,7 +23,7 @@ const cssPrefix = css`
     margin-bottom: 10px;
   }
 
-  :host fieldgroup { 
+  :host fieldgroup {
    display: block;
    margin-bottom: 10px;
    padding: 10px;
@@ -121,12 +121,12 @@ function fieldEditor (doc, onChange) {
     return html`
       <fieldset>
         <label>${key}</label>
-        ${key === 'description' 
+        ${key === 'description'
           ? html`<textarea name="${key}" onchange=${(ev) => {
-              updateField(ev.target.value, path)          
+              updateField(ev.target.value, path)
             }}>${value}</textarea>`
           : html`<input name="${key}" value="${value}" onkeyup=${(ev) => {
-              updateField(ev.target.value, path)     
+              updateField(ev.target.value, path)
             }}>`
         }
       </fireldset>
@@ -140,9 +140,10 @@ function fieldEditor (doc, onChange) {
   }
 
   function renderBodyEditor (content) {
-    return html`<textarea class="body" onkeyup=${updateBody}>${content}</textarea>`
+    return html`<textarea class="body" onkeyup=${updateBody} onchange=${updateBody}>${content}</textarea>`
 
     function updateBody (e) {
+      console.log('textarea updated!!!')
       doc.content = e.target.value
       onChange(doc)
       update(doc)

@@ -1,10 +1,14 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const multer = require('multer')
 const glob = require('glob')
 const fs = require('fs-extra')
+const hammock = require('../hammock')
 
 const DOCUMENTS_DIR = `${__dirname}/../documents`
+const UPLOADS_DIR = `${__dirname}/../uploads/`
 
+const upload = multer({ dest: UPLOADS_DIR })
 const app = express()
 app.use(bodyParser.json())
 app.use(express.static(__dirname + '/../public'))
@@ -38,6 +42,16 @@ app.post('/api/documents/:id', (req, res) => {
   fs.outputFile(`${DOCUMENTS_DIR}/${id}`, body.doc, (err) => {
     if (err) throw err
     res.json({status: 'ok'})
+  })
+})
+
+app.post('/api/files', upload.any(), (req, res) => {
+  console.log('request!')
+  console.log(req.files)
+
+  req.files.forEach((file) => {
+    const url = hammock(file)
+    res.json({status: 'ok', data: url})
   })
 })
 

@@ -31,6 +31,19 @@ function getDoc (id, done) {
   request.send()
 }
 
+function saveFile (file, done) {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const request = new XMLHttpRequest()
+  request.open('POST', '/api/files/')
+  request.addEventListener('load', function () {
+    console.log(this.responseText)
+    done(null, JSON.parse(this.responseText))
+  })
+  request.send(formData)
+}
+
 function saveDoc (id, doc, done) {
   const request = new XMLHttpRequest()
   request.open('POST', '/api/documents/' + encodeURIComponent(id))
@@ -45,6 +58,7 @@ function saveDoc (id, doc, done) {
 module.exports = {
   getDoc,
   saveDoc,
+  saveFile,
   getList,
   sendRequest
 }
