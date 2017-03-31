@@ -1,5 +1,6 @@
 const simpleEditor = require('./simple-editor')
 const markdownPreview = require('./markdown-preview')
+const dragDrop = require('drag-drop')
 const api = require('./client-api.js')
 const debounce = require('lodash.debounce')
 const csjs = require('csjs')
@@ -7,6 +8,9 @@ const csjs = require('csjs')
 const { h, app } = require('hyperapp')
 const hyperx = require('hyperx')
 const html = hyperx(h)
+
+// TODO: encryption
+// https://www.webpackbin.com/bins/-Kf39BfshtwP3rIZVuEV
 
 // var dragDrop = require('drag-and-drop-files')
 // var fileReader = require('filereader-stream')
@@ -45,6 +49,16 @@ function log (msg) {
   // console.log(resultingMessage, 'color: #5e2ca5;')
   const resultingMessage = `[${time}] 🚦 ${msg}`
   console.log(resultingMessage)
+}
+
+function insertAtCaret (el, text) {
+  const startPos = el.selectionStart
+  const endPos = el.selectionEnd
+  el.value = el.value.substring(0, startPos) + text + el.value.substring(endPos, el.value.length)
+  el.selectionStart = startPos + text.length
+  el.selectionEnd = startPos + text.length
+  el.focus()
+  el.dispatchEvent(new Event('input'))
 }
 
 const styles = csjs`
@@ -144,6 +158,13 @@ const subscriptions = [
 
     actions.loadDocList()
       .then(actions.loadLastOpenDoc)
+  },
+  (model, actions, error) => {
+    dragDrop(document.body, function (files) {
+      files.forEach(function (file) {
+        actions.saveFile(file)
+      })
+    })
   }
 ]
 
@@ -156,6 +177,23 @@ const actions = {
   },
   toggleNewDocPopover: (model, data, actions, error) => {
     return { showNewDocPopOver: data }
+  },
+  saveFile: (model, data, actions, error) => {
+    log('Saving file')
+    api.saveFile(data, (err, res) => {
+      if (err) console.log(err)
+      console.log(res.data)
+      // const updatedDoc = {
+      //   doc: `${model.doc}\n\n![](${res.data})`,
+      //   docId: model.docId
+      // }
+
+      const editorText = editorEl.querySelector('textarea')
+      console.log(editorText)
+      const mdImg = `![](${res.data})`
+
+      insertAtCaret(editorText, mdImg)
+    })
   },
   loadDocList: (model, data, actions, error) => {
     return new Promise((resolve, reject) => {
