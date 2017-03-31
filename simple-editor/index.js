@@ -47,7 +47,7 @@ function simpleEditor (doc, onChange) {
 
   function render (content) {
     return html`<div>
-      <textarea class="${styles.body}" onkeyup=${updateBody}>${content}</textarea>
+      <textarea class="${styles.body}" oninput=${updateBody}>${content}</textarea>
     </div>`
 
     function updateBody (e) {
