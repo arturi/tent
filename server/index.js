@@ -46,9 +46,6 @@ app.post('/api/documents/:id', (req, res) => {
 })
 
 app.post('/api/files', upload.any(), (req, res) => {
-  console.log('request!')
-  console.log(req.files)
-
   req.files.forEach((file) => {
     const url = hammock(file)
     res.json({status: 'ok', data: url})
