@@ -4,12 +4,14 @@ const html = hyperx(h)
 
 const MarkdownIt = require('markdown-it')
 const MarkdownItTaskLists = require('markdown-it-task-lists')
-const md = MarkdownIt({html: true, breaks: true})
-  .use(MarkdownItTaskLists)
-const csjs = require('csjs')
+const md = MarkdownIt({
+  html: true, breaks: true, linkify: true
+})
+md.use(MarkdownItTaskLists)
+const css = require('csjs')
 const fastmatter = require('fastmatter')
 
-const styles = csjs`
+const styles = css`
   .mdBody {
     font-family: -apple-system, BlinkMacSystemFont,
            'avenir next', avenir,
