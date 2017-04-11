@@ -1,6 +1,6 @@
 {
   "name": "tent",
-  "version": "0.0.5",
+  "version": "0.1.1",
   "description": "Superstar admin interface with markdown preview",
   "main": "index.js",
   "dependencies": {
@@ -20,6 +20,7 @@
     "multer": "^1.3.0",
     "sharp": "^0.17.2",
     "shortid": "^2.2.8",
+    "template-css": "arturi/template-css",
     "yo-yo": "^1.3.1"
   },
   "devDependencies": {
@@ -29,14 +30,15 @@
     "browserify": "^13.3.0",
     "csjs": "^1.0.6",
     "csjs-injectify": "^1.0.1",
+    "hyperxify": "^2.0.1",
     "npm-run-all": "^3.1.2",
     "watchify": "^3.8.0",
     "yo-yoify": "^3.5.0"
   },
   "scripts": {
-    "build": "browserify -t csjs-injectify -t yo-yoify -t babelify index.js -o dist/tent.js",
+    "build": "browserify -t hyperxify -t babelify -g uglifyify -p bundle-collapser/plugin index.js | uglifyjs > public/bundle.js",
     "server": "node server/index.js",
-    "watch:client": "watchify -t csjs-injectify -t yo-yoify -t babelify index.js -o public/bundle.js -vd",
+    "watch:client": "watchify -t hyperxify -t babelify index.js -o public/bundle.js -vd",
     "watch:server": "cd server && nodemon index.js",
     "watch:dev-server": "browser-sync start --proxy \"localhost:3350\" --port 3351 --files \"public/**\"",
     "start:prod": "npm-run-all build server",
