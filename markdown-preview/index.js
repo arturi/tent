@@ -8,7 +8,7 @@ const md = MarkdownIt({
   html: true, breaks: true, linkify: true
 })
 md.use(MarkdownItTaskLists)
-const css = require('csjs')
+const css = require('template-css')
 const fastmatter = require('fastmatter')
 
 const styles = css`
@@ -36,6 +36,22 @@ const styles = css`
     border-radius: 3px;
     background-color: rgba(27,31,35,0.05);
   }
+
+  .mdBody hr {
+    border: 0;
+    border-top: 1px solid #000;
+  }
+
+  .mdBody .task-list {
+    margin: 0;
+    padding: 0;
+  }
+
+  .mdBody .task-list-item {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
 `
 
 function renderMarkdown (doc, opts) {
@@ -52,12 +68,12 @@ function renderMarkdown (doc, opts) {
     const attributes = parsedDoc.attributes || {}
     const title = attributes.title ? `<h1>${parsedDoc.attributes.title}</h1>` : ''
 
-    element = html`<div class="${styles.mdBody}" onUpdate=${(el) => {
+    element = html`<div class="mdBody" onUpdate=${(el) => {
       el.innerHTML = title + md.render(parsedDoc.body)
     }}></div>`
   } else {
     doc = doc || ''
-    element = html`<div class="${styles.mdBody}" onUpdate=${(el) => {
+    element = html`<div class="mdBody" onUpdate=${(el) => {
       el.innerHTML = el.innerHTML = md.render(doc)
     }}></div>`
   }

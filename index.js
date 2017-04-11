@@ -3,7 +3,8 @@ const markdownPreview = require('./markdown-preview')
 const dragDrop = require('drag-drop')
 const api = require('./client-api.js')
 const debounce = require('lodash.debounce')
-const csjs = require('csjs')
+// const csjs = require('csjs')
+const css = require('template-css')
 
 const { h, app } = require('hyperapp')
 const hyperx = require('hyperx')
@@ -11,24 +12,6 @@ const html = hyperx(h)
 
 // TODO: encryption
 // https://www.webpackbin.com/bins/-Kf39BfshtwP3rIZVuEV
-
-// var dragDrop = require('drag-and-drop-files')
-// var fileReader = require('filereader-stream')
-// var concat = require('concat-stream')
-// var path = require('path')
-//
-// dragDrop(window, function (files) {
-//   files.forEach(function (file) {
-//     fileReader(file).pipe(concat({ encoding: 'buffer' }, function (buf) {
-//       var ext = path.extname(file.name).slice(1)
-//       if (ext === 'svg') ext = 'svg+xml'
-//       var img = document.createElement('img')
-//       var src = 'data:image/' + ext + ';base64,' + buf.toString('base64')
-//       img.setAttribute('src', src)
-//       document.body.appendChild(img)
-//     }))
-//   })
-// })
 
 function log (msg) {
   if (typeof msg === 'object') {
@@ -39,15 +22,19 @@ function log (msg) {
     }
   }
 
+  function pad (str) {
+    return (str.length !== 2) ? '0' + str : str
+  }
+
   var date = new Date()
   var hours = date.getHours().toString()
   var minutes = date.getMinutes().toString()
   var seconds = date.getSeconds().toString()
-  var time = hours + ':' + minutes + ':' + seconds
+  var time = pad(hours) + ':' + pad(minutes) + ':' + pad(seconds)
 
   // const resultingMessage = `%c [${time}] ✨ ${msg}`
   // console.log(resultingMessage, 'color: #5e2ca5;')
-  const resultingMessage = `[${time}] 🚦 ${msg}`
+  var resultingMessage = `[${time}] 🚦 ${msg}`
   console.log(resultingMessage)
 }
 
@@ -61,7 +48,7 @@ function insertAtCaret (el, text) {
   el.dispatchEvent(new Event('input'))
 }
 
-const styles = csjs`
+const styles = css`
   body, html {
     margin: 0;
     padding: 0;
@@ -74,7 +61,7 @@ const styles = csjs`
     font-size: inherit;
   }
 
-  .newDoc {
+  .Tent-newDoc {
     display: none;
     position: absolute;
     top: 0;
@@ -86,18 +73,18 @@ const styles = csjs`
     z-index: 10;
   }
 
-  .newDocVisible {
+  .Tent-newDoc.is-visible {
     display: block;
   }
 
-  .main {
+  .Tent-main {
     display: flex;
     justify-content: center;
     height: 100vh;
     overflow: hidden;
   }
 
-  .list {
+  .Tent-list {
     width: 150px;
     height: 100vh;
     list-style: none;
@@ -107,18 +94,18 @@ const styles = csjs`
     overflow-y: auto;
   }
 
-  .list li {
+  .Tent-list li {
     margin: 0;
     padding: 0;
   }
 
-  .list li:hover button,
+  .Tent-list li:hover button,
   .active button {
     background: black;
     color: white;
   }
 
-  .list button {
+  .Tent-list button {
     cursor: pointer;
     padding: 10px 6px;
     border-bottom: 1px solid black;
@@ -128,12 +115,12 @@ const styles = csjs`
     font-size: 12px;
   }
 
-  .editor {
+  .Tent-editor {
     flex: 1;
     height: 100vh;
   }
 
-  .preview {
+  .Tent-preview {
     flex: 1;
     height: 100vh;
     overflow-y: auto;
@@ -183,16 +170,17 @@ const actions = {
     api.saveFile(data, (err, res) => {
       if (err) console.log(err)
       console.log(res.data)
-      // const updatedDoc = {
-      //   doc: `${model.doc}\n\n![](${res.data})`,
-      //   docId: model.docId
-      // }
+      const type = res.data.type.split('/')[0]
+      const editorTextEl = editorEl.querySelector('textarea')
 
-      const editorText = editorEl.querySelector('textarea')
-      console.log(editorText)
-      const mdImg = `![](${res.data})`
+      let insertContent
+      if (type === 'image') {
+        insertContent = `![](${res.data.url})`
+      } else {
+        insertContent = res.data.url
+      }
 
-      insertAtCaret(editorText, mdImg)
+      insertAtCaret(editorTextEl, insertContent)
     })
   },
   loadDocList: (model, data, actions, error) => {
@@ -277,26 +265,26 @@ function view (model, actions) {
   let newDocName = ''
 
   return html`
-    <main class=${styles.main}>
-      <div class="${styles.newDoc} ${model.showNewDocPopOver ? styles.newDocVisible : ''}">
+    <main class="Tent-main">
+      <div class="Tent-newDoc ${model.showNewDocPopOver ? 'is-visible' : ''}">
         <h4>Create new document</h4>
         <input type="text" placeholder="path/name" onchange=${(ev) => newDocName = ev.target.value}/>
         <button onclick=${() => actions.newDoc(newDocName)}>create</button>
       </div>
 
-      <ul class=${styles.list}>
+      <ul class="Tent-list">
         <li><button onclick=${() => actions.toggleNewDocPopover(true)}>+ new</button></li>
         ${model.docList.map((docId) => {
-          return html`<li class="${model.docId === docId ? styles.active : ''}">
+          return html`<li class="${model.docId === docId ? 'active' : ''}">
             <button onclick=${(ev) => actions.loadDoc(docId)}>${docId}</button></li>`
         })}
       </ul>
 
-      <div class="${styles.editor}">
+      <div class="Tent-editor">
         ${Editor(model, actions)}
       </div>
 
-      <div class="${styles.preview}">
+      <div class="Tent-preview">
         ${markdownPreview(model.doc, { parseFrontmatter: true } )}
       </div>
     </main>

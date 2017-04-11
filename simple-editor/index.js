@@ -1,14 +1,8 @@
 const html = require('yo-yo')
-const csjs = require('csjs')
+const css = require('template-css')
 
-const styles = csjs`
-  fieldgroup {
-    display: block;
-    margin-bottom: 10px;
-    padding: 10px;
-  }
-
-  .body {
+const styles = css`
+  .simpleEditor-body {
     border: 0;
     border-right: 1px solid black;
     margin-bottom: 20px;
@@ -19,7 +13,7 @@ const styles = csjs`
     padding: 7px 15px;
   }
 
-  .body:focus {
+  .simpleEditor-body:focus {
     outline: none;
   }
 `
@@ -47,7 +41,7 @@ function simpleEditor (doc, onChange) {
 
   function render (content) {
     return html`<div>
-      <textarea class="${styles.body}" oninput=${updateBody}>${content}</textarea>
+      <textarea class="simpleEditor-body" oninput=${updateBody}>${content}</textarea>
     </div>`
 
     function updateBody (e) {
