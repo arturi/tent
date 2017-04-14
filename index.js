@@ -3,12 +3,15 @@ const markdownPreview = require('./markdown-preview')
 const dragDrop = require('drag-drop')
 const api = require('./client-api.js')
 const debounce = require('lodash.debounce')
+// const split = require('split.js')
 // const csjs = require('csjs')
 const css = require('template-css')
 
 const { h, app } = require('hyperapp')
 const hyperx = require('hyperx')
 const html = hyperx(h)
+
+// window.split = split
 
 // TODO: encryption
 // https://www.webpackbin.com/bins/-Kf39BfshtwP3rIZVuEV
@@ -49,9 +52,27 @@ function insertAtCaret (el, text) {
 }
 
 const styles = css`
+  html {
+    box-sizing: border-box;
+  }
+
+  *, *:before, *:after {
+    box-sizing: inherit;
+  }
+
   body, html {
     margin: 0;
     padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont,
+           'avenir next', avenir,
+           helvetica, 'helvetica neue',
+           ubuntu,
+           roboto, noto,
+           'segoe ui', arial,
+           sans-serif;
   }
 
   button {
@@ -113,6 +134,11 @@ const styles = css`
     text-align: left;
     outline: none;
     font-size: 12px;
+  }
+
+  .Tent-panels {
+    flex: 1;
+    //display: flex;
   }
 
   .Tent-editor {
@@ -276,7 +302,8 @@ function view (model, actions) {
         <li><button onclick=${() => actions.toggleNewDocPopover(true)}>+ new</button></li>
         ${model.docList.map((docId) => {
           return html`<li class="${model.docId === docId ? 'active' : ''}">
-            <button onclick=${(ev) => actions.loadDoc(docId)}>${docId}</button></li>`
+            <button onclick=${(ev) => actions.loadDoc(docId)}>${docId}</button>
+          </li>`
         })}
       </ul>
 
