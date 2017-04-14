@@ -1,5 +1,7 @@
 # Tent
 
+<img width="100" src="public/favicon.png">
+
 Experimental admin interface to static sites / notes / whatever. Editor for Markdown body, YAML frontmatter fields and a live preview. Built with yo-yo. WIP.
 
 ![tent admin interface: body and separate nested YAML fields](screenshot.jpg)
