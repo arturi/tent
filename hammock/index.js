@@ -82,10 +82,12 @@ function saveUnique (originalName, type, stream, cb) {
 }
 
 function hammock (file, cb) {
-  const type = file.mimetype.split('/')[0]
-
   let stream
-  if (type === 'image') {
+  if (file.mimetype === 'image/jpeg'
+      || file.mimetype === 'image/png'
+      || file.mimetype === 'image/gif'
+      || file.mimetype === 'image/webp') {
+
     stream = resize(file)
   } else {
     stream = fs.createReadStream(path.join(UPLOADS_DIR + file.filename))
