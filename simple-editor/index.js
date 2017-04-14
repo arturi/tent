@@ -40,7 +40,7 @@ function simpleEditor (doc, onChange) {
   }
 
   function render (content) {
-    return html`<div>
+    return html`<div style="height: 100%;">
       <textarea class="simpleEditor-body" oninput=${updateBody}>${content}</textarea>
     </div>`
 
