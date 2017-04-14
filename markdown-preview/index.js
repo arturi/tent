@@ -1,13 +1,14 @@
 const { h, app } = require('hyperapp')
 const hyperx = require('hyperx')
 const html = hyperx(h)
-
 const MarkdownIt = require('markdown-it')
 const MarkdownItTaskLists = require('markdown-it-task-lists')
+
 const md = MarkdownIt({
   html: true, breaks: true, linkify: true
 })
 md.use(MarkdownItTaskLists)
+
 const css = require('template-css')
 const fastmatter = require('fastmatter')
 
@@ -25,8 +26,39 @@ const styles = css`
     line-height: 1.5;
   }
 
+  .mdBody h1 {
+    font-size: 2em;
+    border-bottom: 1px solid #eaecef;
+  }
+
+  .mdBody h2 {
+    font-size: 1.5em;
+    border-bottom: 1px solid #eaecef;
+  }
+
+  .mdBody h3 {
+    font-size: 1.25em;
+  }
+
+  .mdBody a {
+    text-decoration: none;
+  }
+
+    .mdBody a:hover {
+      text-decoration: underline;
+    }
+
   .mdBody img {
     max-width: 100%;
+    height: auto;
+  }
+
+  .mdBody .icon {
+    fill: currentColor;
+    width: 1em;
+    height: 1em;
+    vertical-align: text-bottom;
+    overflow: hidden;
   }
 
   .mdBody code {
