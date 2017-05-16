@@ -84,7 +84,28 @@ const styles = css`
     margin: 0;
     padding: 0;
   }
+
+  .mdBody .slider {
+    height: 400px;
+  }
+
+  .mdBody .slider img {
+    display: block;
+    height: 400px;
+  }
 `
+
+function initSlider () {
+  var flkty = new Flickity('.mdBody .slider', {
+    prevNextButtons: false,
+    selectedAttraction: 0.2,
+    friction: 0.8,
+    imagesLoaded: true,
+    setGallerySize: false,
+    percentPosition: false
+  })
+  return flkty
+}
 
 function renderMarkdown (doc, opts) {
   const defaultOpts = {
@@ -102,11 +123,13 @@ function renderMarkdown (doc, opts) {
 
     element = html`<div class="mdBody" onUpdate=${(el) => {
       el.innerHTML = title + md.render(parsedDoc.body)
+      initSlider()
     }}></div>`
   } else {
     doc = doc || ''
     element = html`<div class="mdBody" onUpdate=${(el) => {
-      el.innerHTML = el.innerHTML = md.render(doc)
+      el.innerHTML = md.render(doc)
+      initSlider()
     }}></div>`
   }
 

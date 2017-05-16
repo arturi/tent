@@ -8,6 +8,8 @@
     "drag-drop": "^2.13.2",
     "express": "^4.14.0",
     "fastmatter": "^1.1.1",
+    "flickity": "^2.0.5",
+    "flickity-imagesloaded": "^2.0.0",
     "fs-extra": "^1.0.0",
     "glob": "^7.1.1",
     "hyperapp": "^0.7.1",
