@@ -1,3 +1,4 @@
+const argv = require('yargs').argv
 const express = require('express')
 const bodyParser = require('body-parser')
 const multer = require('multer')
@@ -5,13 +6,26 @@ const glob = require('glob')
 const fs = require('fs-extra')
 const hammock = require('../hammock')
 
-const DOCUMENTS_DIR = `${__dirname}/../documents`
-const UPLOADS_DIR = `${__dirname}/../uploads/`
+console.log(argv)
 
-const upload = multer({ dest: UPLOADS_DIR })
+const DOCUMENTS_DIR = argv.docs ? argv.docs : `${__dirname}/../documents`
+const PUBLIC_DIR = argv.public ? argv.public : `${__dirname}/../public`
+const PORT = argv.port ? argv.port : 3350
+const TEMP_UPLOADS_DIR = `${__dirname}/../uploads/`
+
+const upload = multer({ dest: TEMP_UPLOADS_DIR })
 const app = express()
 app.use(bodyParser.json())
-app.use(express.static(__dirname + '/../public'))
+app.use(express.static(PUBLIC_DIR))
+app.use('/admin', express.static(`${__dirname}/../public`))
+
+// app.get('/admin', (req, res) => {
+//   console.log('admin!')
+//   fs.readFile(`${__dirname}/../public/index.html`, (err, content) => {
+//     if (err) console.log(err)
+//     res.end(content)
+//   })
+// })
 
 app.get('/api/documents', (req, res) => {
   console.log('list!')
@@ -54,5 +68,7 @@ app.post('/api/files', upload.any(), (req, res) => {
   })
 })
 
-const port = process.env.PORT || 3350
-app.listen(port)
+app.listen(PORT, (err) => {
+  if (err) throw err
+  console.log('Tent is running on localhost:', PORT)
+})
