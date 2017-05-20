@@ -13,7 +13,7 @@ const css = require('template-css')
 const fastmatter = require('fastmatter')
 
 const styles = css`
-  .mdBody {
+  .tent-mdBody {
     font-family: -apple-system, BlinkMacSystemFont,
            'avenir next', avenir,
            helvetica, 'helvetica neue',
@@ -26,34 +26,34 @@ const styles = css`
     line-height: 1.5;
   }
 
-  .mdBody h1 {
+  .tent-mdBody h1 {
     font-size: 2em;
     border-bottom: 1px solid #eaecef;
   }
 
-  .mdBody h2 {
+  .tent-mdBody h2 {
     font-size: 1.5em;
     border-bottom: 1px solid #eaecef;
   }
 
-  .mdBody h3 {
+  .tent-mdBody h3 {
     font-size: 1.25em;
   }
 
-  .mdBody a {
+  .tent-mdBody a {
     text-decoration: none;
   }
 
-    .mdBody a:hover {
+    .tent-mdBody a:hover {
       text-decoration: underline;
     }
 
-  .mdBody img {
+  .tent-mdBody img {
     max-width: 100%;
     height: auto;
   }
 
-  .mdBody .icon {
+  .tent-mdBody .icon {
     fill: currentColor;
     width: 1em;
     height: 1em;
@@ -61,7 +61,7 @@ const styles = css`
     overflow: hidden;
   }
 
-  .mdBody code {
+  .tent-mdBody code {
     padding: 0.2em 0.3em;
     font-family: inherit;
     font-size: 90%;
@@ -69,34 +69,39 @@ const styles = css`
     background-color: rgba(27,31,35,0.05);
   }
 
-  .mdBody hr {
+  .tent-mdBody hr {
     border: 0;
     border-top: 1px solid #000;
   }
 
-  .mdBody .task-list {
+  .tent-mdBody figure {
     margin: 0;
     padding: 0;
   }
 
-  .mdBody .task-list-item {
+  .tent-mdBody .task-list {
+    margin: 0;
+    padding: 0;
+  }
+
+  .tent-mdBody .task-list-item {
     list-style: none;
     margin: 0;
     padding: 0;
   }
 
-  .mdBody .slider {
+  .tent-mdBody .slider {
     height: 400px;
   }
 
-  .mdBody .slider img {
+  .tent-mdBody .slider img {
     display: block;
     height: 400px;
   }
 `
 
 function initSlider () {
-  var flkty = new Flickity('.mdBody .slider', {
+  var flkty = new Flickity('.tent-mdBody .slider', {
     prevNextButtons: false,
     selectedAttraction: 0.2,
     friction: 0.8,
@@ -113,7 +118,7 @@ function renderMarkdown (doc, opts) {
   }
 
   opts = Object.assign({}, defaultOpts, opts)
-
+  doc = doc || ''
   let element
 
   if (opts.parseFrontmatter) {
@@ -121,13 +126,12 @@ function renderMarkdown (doc, opts) {
     const attributes = parsedDoc.attributes || {}
     const title = attributes.title ? `<h1>${parsedDoc.attributes.title}</h1>` : ''
 
-    element = html`<div class="mdBody" onUpdate=${(el) => {
+    element = html`<div class="tent-mdBody" onUpdate=${(el) => {
       el.innerHTML = title + md.render(parsedDoc.body)
       initSlider()
     }}></div>`
   } else {
-    doc = doc || ''
-    element = html`<div class="mdBody" onUpdate=${(el) => {
+    element = html`<div class="tent-mdBody" onUpdate=${(el) => {
       el.innerHTML = md.render(doc)
       initSlider()
     }}></div>`

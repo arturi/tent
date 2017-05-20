@@ -3,15 +3,11 @@ const markdownPreview = require('./markdown-preview')
 const dragDrop = require('drag-drop')
 const api = require('./client-api.js')
 const debounce = require('lodash.debounce')
-// const split = require('split.js')
-// const csjs = require('csjs')
 const css = require('template-css')
 
 const { h, app } = require('hyperapp')
 const hyperx = require('hyperx')
 const html = hyperx(h)
-
-// window.split = split
 
 // TODO: encryption
 // https://www.webpackbin.com/bins/-Kf39BfshtwP3rIZVuEV
@@ -82,7 +78,7 @@ const styles = css`
     font-size: inherit;
   }
 
-  .Tent-newDoc {
+  .tent-newDoc {
     display: none;
     position: absolute;
     top: 0;
@@ -94,18 +90,18 @@ const styles = css`
     z-index: 10;
   }
 
-  .Tent-newDoc.is-visible {
+  .tent-newDoc.is-visible {
     display: block;
   }
 
-  .Tent-main {
+  .tent-main {
     display: flex;
     justify-content: center;
     height: 100vh;
     overflow: hidden;
   }
 
-  .Tent-list {
+  .tent-list {
     width: 150px;
     height: 100vh;
     list-style: none;
@@ -115,18 +111,18 @@ const styles = css`
     overflow-y: auto;
   }
 
-  .Tent-list li {
+  .tent-list li {
     margin: 0;
     padding: 0;
   }
 
-  .Tent-list li:hover button,
+  .tent-list li:hover button,
   .active button {
     background: black;
     color: white;
   }
 
-  .Tent-list button {
+  .tent-list button {
     cursor: pointer;
     padding: 10px 6px;
     border-bottom: 1px solid black;
@@ -136,17 +132,16 @@ const styles = css`
     font-size: 12px;
   }
 
-  .Tent-panels {
+  .tent-panels {
     flex: 1;
-    //display: flex;
   }
 
-  .Tent-editor {
+  .tent-editor {
     flex: 1;
     height: 100vh;
   }
 
-  .Tent-preview {
+  .tent-preview {
     flex: 1;
     height: 100vh;
     overflow-y: auto;
@@ -291,14 +286,14 @@ function view (model, actions) {
   let newDocName = ''
 
   return html`
-    <main class="Tent-main">
-      <div class="Tent-newDoc ${model.showNewDocPopOver ? 'is-visible' : ''}">
+    <main class="tent-main">
+      <div class="tent-newDoc ${model.showNewDocPopOver ? 'is-visible' : ''}">
         <h4>Create new document</h4>
         <input type="text" placeholder="path/name" onchange=${(ev) => newDocName = ev.target.value}/>
         <button onclick=${() => actions.newDoc(newDocName)}>create</button>
       </div>
 
-      <ul class="Tent-list">
+      <ul class="tent-list">
         <li><button onclick=${() => actions.toggleNewDocPopover(true)}>+ new</button></li>
         ${model.docList.map((docId) => {
           return html`<li class="${model.docId === docId ? 'active' : ''}">
@@ -307,11 +302,11 @@ function view (model, actions) {
         })}
       </ul>
 
-      <div class="Tent-editor">
+      <div class="tent-editor">
         ${Editor(model, actions)}
       </div>
 
-      <div class="Tent-preview">
+      <div class="tent-preview">
         ${markdownPreview(model.doc, { parseFrontmatter: true } )}
       </div>
     </main>
