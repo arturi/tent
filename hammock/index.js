@@ -11,8 +11,6 @@ const PUBLIC_DIR = `${__dirname}/../public/`
 const PUBLIC_FILE_DIR = `${__dirname}/../public/s`
 const PUBLIC_FILE_PATH = '/public/s'
 
-// mkdirp.sync(PUBLIC_FILE_DIR)
-
 const opts = {
   newImageSize: 1600,
   includeOriginalFileName: false
