@@ -7,6 +7,8 @@ const { h, Component, render } = require('preact')
 const hyperx = require('hyperx')
 const html = hyperx(h)
 
+require('preact/devtools')
+
 // TODO: encryption
 // https://www.webpackbin.com/bins/-Kf39BfshtwP3rIZVuEV
 
@@ -42,7 +44,7 @@ let state = {
   showNewDocPopOver: false
 }
 
-window.state = state
+let editorEl
 
 const actions = {
   updateDocList: (data) => {
@@ -89,13 +91,18 @@ const actions = {
         if (err) reject(err)
         log('Loaded doc: ' + docId)
         actions.updateDoc({ doc: res.data, docId: docId })
-        actions.updateEditor(data)
+        actions.updateEditor()
         resolve(res)
       })
     })
   },
-  updateEditor: (data) => {
+  updateEditor: () => {
     log('Updating editor')
+    editorEl.value = state.doc
+  },
+  setEditorEl: (data) => {
+    log('Setting editor element')
+    editorEl = data
   },
   saveDoc: (data) => {
     log('Saving: ' + data.docId)

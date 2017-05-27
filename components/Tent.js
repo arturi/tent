@@ -122,7 +122,7 @@ class Tent extends Component {
     this.state = props.state
   }
 
-	render () {
+	render (props, state) {
     const actions = this.props.actions
     let newDocName = ''
 
@@ -131,6 +131,10 @@ class Tent extends Component {
       actions.updateDoc(data)
       actions._saveDoc(data, actions)
     }
+
+    function onEditorCreate (el) {
+       actions.setEditorEl(el)
+     }
 
     return html`
       <main class="tent-main">
@@ -150,7 +154,7 @@ class Tent extends Component {
         </ul>
 
         <div class="tent-editor">
-          ${h(Editor, {state: state, actions: actions, onChange: onEditorChange})}
+          ${h(Editor, {doc: state.doc, onChange: onEditorChange, onCreate: onEditorCreate})}
         </div>
 
         <div class="tent-preview">

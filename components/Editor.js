@@ -26,11 +26,13 @@ class Editor extends Component {
     this.state = props.state
   }
 
+  componentDidMount () {
+    console.log('ебать ', this.base)
+    this.props.onCreate(this.base)
+  }
+
 	render () {
-    const state = this.props.state
-		return html`<div style="height: 100%;">
-      <textarea class="simpleEditor-body" onKeyUp=${this.props.onChange}>${this.state.doc}</textarea>
-    </div>`
+		return html`<textarea class="simpleEditor-body" onKeyUp=${this.props.onChange}>${this.props.doc}</textarea>`
 	}
 }
 
