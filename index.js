@@ -1,11 +1,9 @@
-const simpleEditor = require('./simple-editor')
-const markdownPreview = require('./markdown-preview')
+const Tent = require('./components/Tent')
 const dragDrop = require('drag-drop')
 const api = require('./client-api.js')
 const debounce = require('lodash.debounce')
 const css = require('template-css')
-
-const { h, app } = require('hyperapp')
+const { h, Component, render } = require('preact')
 const hyperx = require('hyperx')
 const html = hyperx(h)
 
@@ -37,156 +35,26 @@ function log (msg) {
   console.log(resultingMessage)
 }
 
-function insertAtCaret (el, text) {
-  const startPos = el.selectionStart
-  const endPos = el.selectionEnd
-  el.value = el.value.substring(0, startPos) + text + el.value.substring(endPos, el.value.length)
-  el.selectionStart = startPos + text.length
-  el.selectionEnd = startPos + text.length
-  el.focus()
-  el.dispatchEvent(new Event('input'))
-}
-
-const styles = css`
-  html {
-    box-sizing: border-box;
-  }
-
-  *, *:before, *:after {
-    box-sizing: inherit;
-  }
-
-  body, html {
-    margin: 0;
-    padding: 0;
-  }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont,
-           'avenir next', avenir,
-           helvetica, 'helvetica neue',
-           ubuntu,
-           roboto, noto,
-           'segoe ui', arial,
-           sans-serif;
-  }
-
-  button {
-    background: none;
-    border: 0;
-    font-family: inherit;
-    font-size: inherit;
-  }
-
-  .tent-newDoc {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 200px;
-    border: 1px solid #b9b9b9;
-    border-radius: 3px;
-    background-color: white;
-    z-index: 10;
-  }
-
-  .tent-newDoc.is-visible {
-    display: block;
-  }
-
-  .tent-main {
-    display: flex;
-    justify-content: center;
-    height: 100vh;
-    overflow: hidden;
-  }
-
-  .tent-list {
-    width: 150px;
-    height: 100vh;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    border-right: 1px solid black;
-    overflow-y: auto;
-  }
-
-  .tent-list li {
-    margin: 0;
-    padding: 0;
-  }
-
-  .tent-list li:hover button,
-  .active button {
-    background: black;
-    color: white;
-  }
-
-  .tent-list button {
-    cursor: pointer;
-    padding: 10px 6px;
-    border-bottom: 1px solid black;
-    width: 100%;
-    text-align: left;
-    outline: none;
-    font-size: 12px;
-  }
-
-  .tent-panels {
-    flex: 1;
-  }
-
-  .tent-editor {
-    flex: 1;
-    height: 100vh;
-  }
-
-  .tent-preview {
-    flex: 1;
-    height: 100vh;
-    overflow-y: auto;
-  }
-`
-
-let editor
-let editorEl
-
-const model = {
+let state = {
   doc: '',
   docId: '',
   docList: [],
   showNewDocPopOver: false
 }
 
-const subscriptions = [
-  (model, actions, error) => {
-    log('Start like an animal!')
-
-    window.onbeforeunload = (ev) => actions.saveState()
-
-    actions.loadDocList()
-      .then(actions.loadLastOpenDoc)
-  },
-  (model, actions, error) => {
-    dragDrop(document.body, function (files) {
-      files.forEach(function (file) {
-        actions.saveFile(file)
-      })
-    })
-  }
-]
+window.state = state
 
 const actions = {
-  updateDocList: (model, data, actions, error) => {
-    return { docList: data }
+  updateDocList: (data) => {
+    update({ docList: data })
   },
-  updateDoc: (model, data, actions, error) => {
-    return { doc: data.doc, docId: data.docId }
+  updateDoc: (data) => {
+    update({ doc: data.doc, docId: data.docId })
   },
-  toggleNewDocPopover: (model, data, actions, error) => {
-    return { showNewDocPopOver: data }
+  toggleNewDocPopover: (data) => {
+    update({ showNewDocPopOver: data })
   },
-  saveFile: (model, data, actions, error) => {
+  saveFile: (data) => {
     log('Saving file')
     api.saveFile(data, (err, res) => {
       if (err) console.log(err)
@@ -204,7 +72,7 @@ const actions = {
       insertAtCaret(editorTextEl, insertContent)
     })
   },
-  loadDocList: (model, data, actions, error) => {
+  loadDocList: (data) => {
     return new Promise((resolve, reject) => {
       api.getList((err, res) => {
         if (err) reject(err)
@@ -214,23 +82,22 @@ const actions = {
       })
     })
   },
-  loadDoc: (model, data, actions, error) => {
-    const docId = data || model.docList[0]
+  loadDoc: (data) => {
+    const docId = data || state.docList[0]
     return new Promise((resolve, reject) => {
       api.getDoc(docId, (err, res) => {
         if (err) reject(err)
         log('Loaded doc: ' + docId)
         actions.updateDoc({ doc: res.data, docId: docId })
-        actions.updateEditor(model, actions, data, error)
+        actions.updateEditor(data)
         resolve(res)
       })
     })
   },
-  updateEditor: (model, data, actions, error) => {
+  updateEditor: (data) => {
     log('Updating editor')
-    editor.update(model.doc, editorEl)
   },
-  saveDoc: (model, data, actions, error) => {
+  saveDoc: (data) => {
     log('Saving: ' + data.docId)
     return new Promise(function (resolve, reject) {
       api.saveDoc(data.docId, data.doc, (err, res) => {
@@ -241,7 +108,8 @@ const actions = {
       })
     })
   },
-  newDoc: (model, data, actions, error) => {
+  _saveDoc: debounce((data, actions) => actions.saveDoc(data), 1000),
+  newDoc: (data) => {
     const docId = data
     log('Creating new doc: ' + docId)
 
@@ -250,10 +118,10 @@ const actions = {
       .then(() => actions.loadDoc(docId))
       .then(() => actions.toggleNewDocPopover(false))
   },
-  saveState: (model, data, actions, error) => {
-    localStorage.setItem('tentState', JSON.stringify(model))
+  saveState: (data) => {
+    localStorage.setItem('tentState', JSON.stringify(state))
   },
-  loadLastOpenDoc: (model, data, actions, error) => {
+  loadLastOpenDoc: (data) => {
     const savedStateString = localStorage.getItem('tentState')
     const savedState = JSON.parse(savedStateString)
     let docId
@@ -266,56 +134,26 @@ const actions = {
   }
 }
 
-const _saveDoc = debounce((data, actions) => actions.saveDoc(data), 1000)
+let root = render(h(Tent, {state: state, actions: actions, update: update}), document.body)
 
-function Editor (model, actions) {
-  editor = simpleEditor(model.doc, (updatedDoc) => {
-    const data = {docId: model.docId, doc: updatedDoc}
-    actions.updateDoc(data)
-    _saveDoc(data, actions)
+function update (patch) {
+  state = Object.assign({}, state, patch)
+  root._component.setState(state)
+}
+
+function init () {
+  log('Start like an animal!')
+  update(state)
+
+  window.onbeforeunload = (ev) => actions.saveState()
+
+  dragDrop(document.body, (files) => {
+    files.forEach((file) => {
+      actions.saveFile(file)
+    })
   })
 
-  return html`<div onCreate=${(el) => {
-      el.appendChild(editor.el)
-      editorEl = el
-    }}>
-  </div>`
+  actions.loadDocList().then(actions.loadLastOpenDoc)
 }
 
-function view (model, actions) {
-  let newDocName = ''
-
-  return html`
-    <main class="tent-main">
-      <div class="tent-newDoc ${model.showNewDocPopOver ? 'is-visible' : ''}">
-        <h4>Create new document</h4>
-        <input type="text" placeholder="path/name" onchange=${(ev) => newDocName = ev.target.value}/>
-        <button onclick=${() => actions.newDoc(newDocName)}>create</button>
-      </div>
-
-      <ul class="tent-list">
-        <li><button onclick=${() => actions.toggleNewDocPopover(true)}>+ new</button></li>
-        ${model.docList.map((docId) => {
-          return html`<li class="${model.docId === docId ? 'active' : ''}">
-            <button onclick=${(ev) => actions.loadDoc(docId)}>${docId}</button>
-          </li>`
-        })}
-      </ul>
-
-      <div class="tent-editor">
-        ${Editor(model, actions)}
-      </div>
-
-      <div class="tent-preview">
-        ${markdownPreview(model.doc, { parseFrontmatter: true } )}
-      </div>
-    </main>
-  `
-}
-
-const myApp = app({
-  model: model,
-  view: view,
-  actions: actions,
-  subscriptions: subscriptions
-})
+init()

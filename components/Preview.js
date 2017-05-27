@@ -1,16 +1,15 @@
-const { h, app } = require('hyperapp')
+const { h, Component, render } = require('preact')
 const hyperx = require('hyperx')
 const html = hyperx(h)
+const css = require('template-css')
 const MarkdownIt = require('markdown-it')
 const MarkdownItTaskLists = require('markdown-it-task-lists')
+const fastmatter = require('fastmatter')
 
 const md = MarkdownIt({
   html: true, breaks: true, linkify: true
 })
 md.use(MarkdownItTaskLists)
-
-const css = require('template-css')
-const fastmatter = require('fastmatter')
 
 const styles = css`
   .tent-mdBody {
@@ -112,32 +111,24 @@ function initSlider () {
   return flkty
 }
 
-function renderMarkdown (doc, opts) {
-  const defaultOpts = {
-    parseFrontmatter: false
-  }
+class Preview extends Component {
+	render () {
+    let element
 
-  opts = Object.assign({}, defaultOpts, opts)
-  doc = doc || ''
-  let element
+    let opts = this.props.opts || {}
 
-  if (opts.parseFrontmatter) {
-    const parsedDoc = fastmatter(doc)
-    const attributes = parsedDoc.attributes || {}
-    const title = attributes.title ? `<h1>${parsedDoc.attributes.title}</h1>` : ''
+    if (opts.parseFrontmatter) {
+      const parsedDoc = fastmatter(this.props.doc)
+      const attributes = parsedDoc.attributes || {}
+      const title = attributes.title ? `<h1>${parsedDoc.attributes.title}</h1>` : ''
 
-    element = html`<div class="tent-mdBody" onUpdate=${(el) => {
-      el.innerHTML = title + md.render(parsedDoc.body)
-      initSlider()
-    }}></div>`
-  } else {
-    element = html`<div class="tent-mdBody" onUpdate=${(el) => {
-      el.innerHTML = md.render(doc)
-      initSlider()
-    }}></div>`
-  }
+      element = html`<div class="tent-mdBody" dangerouslySetInnerHTML={{ __html: title + md.render(parsedDoc.body) }}></div>`
+    } else {
+      element = html`<div class="tent-mdBody" dangerouslySetInnerHTML=${{ __html: md.render(this.props.doc) }}></div>`
+    }
 
-  return element
+		return element
+	}
 }
 
-module.exports = renderMarkdown
+module.exports = Preview
