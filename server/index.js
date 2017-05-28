@@ -8,10 +8,18 @@ const hammock = require('../hammock')
 
 console.log(argv)
 
-const DOCUMENTS_DIR = argv.docs ? argv.docs : `${__dirname}/../documents`
-const PUBLIC_DIR = argv.public ? argv.public : `${__dirname}/../public`
+const DOCUMENTS_DIR = argv.docs ? argv.docs : `./../documents`
+const RELATIVE_MEDIA_DIR = argv.relativeMediaDir ? argv.relativeMediaDir : '/s/'
+const PUBLIC_DIR = argv.public ? argv.public : `./../public`
 const PORT = argv.port ? argv.port : 3350
-const TEMP_UPLOADS_DIR = `${__dirname}/../uploads/`
+const TEMP_UPLOADS_DIR = `./../uploads/`
+
+const hammockOpts = {
+  newImageSize: 1600,
+  includeOriginalFileName: false,
+  publicDir: PUBLIC_DIR ,
+  relativeMediaDir: RELATIVE_MEDIA_DIR
+}
 
 const upload = multer({ dest: TEMP_UPLOADS_DIR })
 const app = express()
@@ -61,7 +69,7 @@ app.post('/api/documents/:id', (req, res) => {
 
 app.post('/api/files', upload.any(), (req, res) => {
   req.files.forEach((file) => {
-    hammock(file, function (err, data) {
+    hammock(file, hammockOpts, function (err, data) {
       if (err) throw err
       res.json({status: 'ok', data: data})
     })
