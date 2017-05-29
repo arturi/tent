@@ -3,6 +3,9 @@ const fs = require('fs')
 const path = require('path')
 const shortid = require('shortid')
 const mkdirp = require('mkdirp')
+const imagemin = require('imagemin')
+const imageminJpegtran = require('imagemin-jpegtran')
+const imageminPngquant = require('imagemin-pngquant')
 
 module.exports = hammock
 
@@ -64,7 +67,8 @@ function hammock (file, opts, cb) {
     const newName = generateUniqueName(originalName)
     const date = new Date()
     const datePath = `${date.getFullYear().toString()}/${pad((date.getMonth() + 1).toString())}`
-    const destPath = path.join(opts.publicDir, opts.relativeMediaDir, datePath, newName)
+    const destDir = path.join(opts.publicDir, opts.relativeMediaDir, datePath)
+    const destPath = path.join(destDir, newName)
     const relativePath = path.join(opts.relativeMediaDir, datePath, newName)
 
     if (!fileExists(destPath)) {
@@ -75,7 +79,15 @@ function hammock (file, opts, cb) {
         outStream.on('error', cb)
         outStream.on('finish', function () {
           console.log(`Saved to ${relativePath}`)
-          cb(null, { type: type, url: relativePath })
+          imagemin([destPath], destDir, {
+            plugins: [
+              imageminJpegtran(),
+              imageminPngquant({quality: '65-80'})
+            ]
+          }).then(files => {
+            console.log(`Minified with imagemin: ${files[0].path}`)
+            cb(null, { type: type, url: relativePath })
+          })
         })
       })
     } else {
