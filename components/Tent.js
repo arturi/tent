@@ -5,16 +5,6 @@ const css = require('template-css')
 const hyperx = require('hyperx')
 const html = hyperx(h)
 
-function insertAtCaret (el, text) {
-  const startPos = el.selectionStart
-  const endPos = el.selectionEnd
-  el.value = el.value.substring(0, startPos) + text + el.value.substring(endPos, el.value.length)
-  el.selectionStart = startPos + text.length
-  el.selectionEnd = startPos + text.length
-  el.focus()
-  el.actionsEvent(new Event('input'))
-}
-
 const styles = css`
   html {
     box-sizing: border-box;
@@ -117,13 +107,9 @@ const styles = css`
 `
 
 class Tent extends Component {
-  constructor (props) {
-    super(props)
-    this.state = props.state
-  }
-
-	render (props, state) {
-    const actions = this.props.actions
+	render (props) {
+    const actions = props.actions
+    const state = props.state
     let newDocName = ''
 
     function onEditorChange (ev) {

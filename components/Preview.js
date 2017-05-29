@@ -90,12 +90,12 @@ const styles = css`
   }
 
   .tent-mdBody .slider {
-    height: 400px;
+    // height: 400px;
   }
 
   .tent-mdBody .slider img {
-    display: block;
-    height: 400px;
+    // display: block;
+    // height: 400px;
   }
 `
 

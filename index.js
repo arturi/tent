@@ -37,6 +37,17 @@ function log (msg) {
   console.log(resultingMessage)
 }
 
+function insertAtCaret (el, text) {
+  const startPos = el.selectionStart
+  const endPos = el.selectionEnd
+  el.value = el.value.substring(0, startPos) + text + el.value.substring(endPos, el.value.length)
+  el.selectionStart = startPos + text.length
+  el.selectionEnd = startPos + text.length
+  el.focus()
+  el.dispatchEvent(new Event('input', { bubbles: true }))
+  // el.actionsEvent(new Event('input'))
+}
+
 let state = {
   doc: '',
   docId: '',
@@ -62,8 +73,7 @@ const actions = {
       if (err) console.log(err)
       console.log(res.data)
       const type = res.data.type.split('/')[0]
-      const editorTextEl = editorEl.querySelector('textarea')
-
+      
       let insertContent
       if (type === 'image') {
         insertContent = `![](${res.data.url})`
@@ -71,7 +81,7 @@ const actions = {
         insertContent = res.data.url
       }
 
-      insertAtCaret(editorTextEl, insertContent)
+      insertAtCaret(editorEl, insertContent)
     })
   },
   loadDocList: (data) => {
@@ -145,7 +155,8 @@ let root = render(h(Tent, {state: state, actions: actions, update: update}), doc
 
 function update (patch) {
   state = Object.assign({}, state, patch)
-  root._component.setState(state)
+  render(h(Tent, {state: state, actions: actions, update: update}), document.body, root)
+  // root._component.setState(state)
 }
 
 function init () {

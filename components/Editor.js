@@ -27,12 +27,11 @@ class Editor extends Component {
   }
 
   componentDidMount () {
-    console.log('ебать ', this.base)
     this.props.onCreate(this.base)
   }
 
 	render () {
-		return html`<textarea class="simpleEditor-body" onKeyUp=${this.props.onChange}>${this.props.doc}</textarea>`
+		return html`<textarea class="simpleEditor-body" onInput=${this.props.onChange}>${this.props.doc}</textarea>`
 	}
 }
 
