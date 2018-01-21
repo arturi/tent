@@ -27,14 +27,6 @@ app.use(bodyParser.json())
 app.use(express.static(PUBLIC_DIR))
 app.use('/admin', express.static(`${__dirname}/../public`))
 
-// app.get('/admin', (req, res) => {
-//   console.log('admin!')
-//   fs.readFile(`${__dirname}/../public/index.html`, (err, content) => {
-//     if (err) console.log(err)
-//     res.end(content)
-//   })
-// })
-
 app.get('/api/documents', (req, res) => {
   console.log('list!')
   glob('**/*.md', { cwd: DOCUMENTS_DIR }, (err, fileList) => {

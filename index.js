@@ -7,8 +7,6 @@ const { h, Component, render } = require('preact')
 const hyperx = require('hyperx')
 const html = hyperx(h)
 
-require('preact/devtools')
-
 // TODO: encryption
 // https://www.webpackbin.com/bins/-Kf39BfshtwP3rIZVuEV
 
