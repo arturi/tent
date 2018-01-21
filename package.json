@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "body-parser": "^1.15.2",
+    "bundle-collapser": "^1.3.0",
     "drag-drop": "^2.13.2",
     "express": "^4.14.0",
     "fastmatter": "^1.1.1",
@@ -27,9 +28,11 @@
     "markdown-it-task-lists": "^1.4.1",
     "mkdirp": "^0.5.1",
     "multer": "^1.3.0",
+    "preact": "^8.2.7",
     "sharp": "^0.17.3",
     "shortid": "^2.2.8",
     "template-css": "arturi/template-css",
+    "uglifyify": "^4.0.5",
     "yargs": "^8.0.1"
   },
   "devDependencies": {
@@ -43,9 +46,9 @@
   },
   "scripts": {
     "build": "browserify -t hyperxify -t babelify -g uglifyify -p bundle-collapser/plugin index.js | uglifyjs > public/bundle.js",
-    "server": "node server/index.js",
+    "server": "node server/index.js --port=3360",
     "watch:client": "watchify -t babelify index.js -o public/bundle.js -vd",
-    "watch:server": "cd server && nodemon index.js",
+    "watch:server": "cd server && nodemon index.js --port=3360",
     "watch:dev-server": "browser-sync start --proxy \"localhost:3350\" --port 3351 --files \"public/**\"",
     "start:prod": "npm-run-all build server",
     "start": "npm-run-all --parallel watch:client watch:server watch:dev-server"
