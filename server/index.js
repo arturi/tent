@@ -8,9 +8,9 @@ const hammock = require('../hammock')
 
 console.log(argv)
 
-const DOCUMENTS_DIR = argv.docs ? argv.docs : `./../documents`
+const DOCUMENTS_DIR = argv.docs ? argv.docs : `./documents`
 const RELATIVE_MEDIA_DIR = argv.relativeMediaDir ? argv.relativeMediaDir : '/s/'
-const PUBLIC_DIR = argv.public ? argv.public : `./../public`
+const PUBLIC_DIR = argv.public ? argv.public : `./public`
 const PORT = argv.port ? argv.port : 3350
 const TEMP_UPLOADS_DIR = `./../uploads/`
 
