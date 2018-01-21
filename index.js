@@ -19,9 +19,7 @@ function log (msg) {
     }
   }
 
-  function pad (str) {
-    return (str.length !== 2) ? '0' + str : str
-  }
+  const pad = (str) => (str.length !== 2) ? '0' + str : str
 
   var date = new Date()
   var hours = date.getHours().toString()
@@ -29,8 +27,6 @@ function log (msg) {
   var seconds = date.getSeconds().toString()
   var time = pad(hours) + ':' + pad(minutes) + ':' + pad(seconds)
 
-  // const resultingMessage = `%c [${time}] ✨ ${msg}`
-  // console.log(resultingMessage, 'color: #5e2ca5;')
   var resultingMessage = `[${time}] 🚦 ${msg}`
   console.log(resultingMessage)
 }
@@ -43,7 +39,6 @@ function insertAtCaret (el, text) {
   el.selectionEnd = startPos + text.length
   el.focus()
   el.dispatchEvent(new Event('input', { bubbles: true }))
-  // el.actionsEvent(new Event('input'))
 }
 
 let state = {

@@ -12,7 +12,7 @@ const md = MarkdownIt({
 md.use(MarkdownItTaskLists)
 
 const styles = css`
-  .tent-mdBody {
+.tent-mdBody {
     font-family: -apple-system, BlinkMacSystemFont,
            'avenir next', avenir,
            helvetica, 'helvetica neue',
@@ -23,6 +23,7 @@ const styles = css`
     box-sizing: border-box;
     padding: 7px 15px;
     line-height: 1.5;
+    word-wrap: break-word;
   }
 
   .tent-mdBody h1 {
@@ -61,11 +62,14 @@ const styles = css`
   }
 
   .tent-mdBody code {
-    padding: 0.2em 0.3em;
+    display: inline-block;
+    padding: 0.3em 0.6em;
     font-family: inherit;
     font-size: 90%;
     border-radius: 3px;
     background-color: rgba(27,31,35,0.05);
+    max-width: 100%;
+    overflow-x: auto;
   }
 
   .tent-mdBody hr {
@@ -88,28 +92,7 @@ const styles = css`
     margin: 0;
     padding: 0;
   }
-
-  .tent-mdBody .slider {
-    // height: 400px;
-  }
-
-  .tent-mdBody .slider img {
-    // display: block;
-    // height: 400px;
-  }
 `
-
-function initSlider () {
-  var flkty = new Flickity('.tent-mdBody .slider', {
-    prevNextButtons: false,
-    selectedAttraction: 0.2,
-    friction: 0.8,
-    imagesLoaded: true,
-    setGallerySize: false,
-    percentPosition: false
-  })
-  return flkty
-}
 
 class Preview extends Component {
 	render () {
