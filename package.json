@@ -1,11 +1,14 @@
 {
   "name": "tent",
-  "version": "0.3.1",
+  "version": "0.4.5",
   "description": "Superstar admin interface with markdown preview",
   "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arturi/tent.git"
+  },
+  "bin": {
+    "tent": "server/index.js"
   },
   "dependencies": {
     "body-parser": "^1.17.2",
@@ -18,19 +21,20 @@
     "glob": "^7.1.2",
     "hyperx": "^2.3.0",
     "imagemin": "^5.3.1",
+    "imagemin-giflossy": "^5.1.10",
     "imagemin-jpegtran": "^5.0.2",
     "imagemin-pngquant": "^5.0.1",
     "lodash": "^4.17.3",
-    "lodash.debounce": "^4.0.8",
     "markdown-it": "^8.3.1",
     "markdown-it-task-lists": "^1.4.1",
     "mkdirp": "^0.5.1",
     "multer": "^1.3.0",
+    "preact": "^8.2.7",
     "sharp": "^0.17.3",
     "shortid": "^2.2.8",
     "template-css": "github:arturi/template-css",
     "uglifyify": "^4.0.5",
-    "preact": "^8.2.7",
+    "uppy": "^0.22.1",
     "yargs": "^8.0.1"
   },
   "devDependencies": {
@@ -44,13 +48,13 @@
     "nodemon": "^1.11.0"
   },
   "scripts": {
-    "build": "browserify -t hyperxify -t babelify -g uglifyify -p bundle-collapser/plugin index.js | uglifyjs > public/bundle.js",
+    "build": "browserify -t hyperxify -t babelify -g uglifyify -p bundle-collapser/plugin client/index.js | uglifyjs > public/bundle.js",
     "server": "node server/index.js --port=3360",
-    "watch:client": "watchify -t babelify index.js -o public/bundle.js -vd",
-    "watch:server": "cd server && nodemon index.js --port=3360",
-    "watch:dev-server": "browser-sync start --proxy \"localhost:3350\" --port 3351 --files \"public/**\"",
+    "watch:client": "watchify -t babelify client/index.js -o public/bundle.js -vd",
+    "watch:server": "nodemon --watch server/ server/index.js --port=3360",
+    "watch:browser-sync": "browser-sync start --proxy \"localhost:3360\" --port 3351 --files \"public/**\"",
     "start:prod": "npm-run-all build server",
-    "start": "npm-run-all --parallel watch:client watch:server watch:dev-server"
+    "start": "npm-run-all --parallel watch:client watch:server watch:browser-sync"
   },
   "keywords": [
     "admin",
