@@ -6,6 +6,8 @@ const mkdirp = require('mkdirp')
 const imagemin = require('imagemin')
 const imageminJpegtran = require('imagemin-jpegtran')
 const imageminPngquant = require('imagemin-pngquant')
+const imageminGiflossy = require('imagemin-giflossy')
+// const imageminWebp = require('imagemin-webp')
 
 module.exports = hammock
 
@@ -24,11 +26,11 @@ function hammock (file, opts, cb) {
     try {
       fs.statSync(filePath)
       return true
-    } catch (e) {
-      if (e.code === 'ENOENT') {
+    } catch (err) {
+      if (err.code === 'ENOENT') {
         return false
       }
-      throw e
+      throw err
     }
   }
 
@@ -71,7 +73,7 @@ function hammock (file, opts, cb) {
     const destPath = path.join(destDir, newName)
     const relativePath = path.join(opts.relativeMediaDir, datePath, newName)
 
-    if (!fileExists(destPath)) {
+    if ( !fileExists(destPath) ) {
       mkdirp(path.join(opts.publicDir, opts.relativeMediaDir, datePath), function (err) {
         if (err) cb(err)
         const outStream = fs.createWriteStream(destPath)
@@ -81,7 +83,9 @@ function hammock (file, opts, cb) {
           console.log(`Saved to ${relativePath}`)
           imagemin([destPath], destDir, {
             plugins: [
+              imageminGiflossy({ lossy: 80 }),
               imageminJpegtran(),
+              // imageminWebp(),
               imageminPngquant({quality: '65-80'})
             ]
           }).then(files => {
@@ -97,11 +101,9 @@ function hammock (file, opts, cb) {
   }
 
   let stream
-  if (file.mimetype === 'image/jpeg'
-      || file.mimetype === 'image/png'
-      || file.mimetype === 'image/gif'
-      || file.mimetype === 'image/webp') {
-
+  if (file.mimetype === 'image/jpeg' ||
+      file.mimetype === 'image/png' ||
+      file.mimetype === 'image/webp') {
     stream = resize(file)
   } else {
     stream = fs.createReadStream(path.join(UPLOADS_DIR + file.filename))
