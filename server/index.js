@@ -1,3 +1,5 @@
+#! /usr/bin/env node
+
 const argv = require('yargs').argv
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -12,7 +14,7 @@ const DOCUMENTS_DIR = argv.docs ? argv.docs : `./documents`
 const RELATIVE_MEDIA_DIR = argv.relativeMediaDir ? argv.relativeMediaDir : '/s/'
 const PUBLIC_DIR = argv.public ? argv.public : `./public`
 const PORT = argv.port ? argv.port : 3350
-const TEMP_UPLOADS_DIR = `./../uploads/`
+const TEMP_UPLOADS_DIR = `./uploads/`
 
 const hammockOpts = {
   newImageSize: 1600,
@@ -63,7 +65,7 @@ app.post('/api/files', upload.any(), (req, res) => {
   req.files.forEach((file) => {
     hammock(file, hammockOpts, function (err, data) {
       if (err) throw err
-      res.json({status: 'ok', data: data})
+      res.json({ status: 'ok', data: data })
     })
   })
 })
