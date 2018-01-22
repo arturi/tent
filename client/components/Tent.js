@@ -1,9 +1,10 @@
-const Editor = require('./Editor')
-const Preview = require('./Preview')
 const { h, Component, render } = require('preact')
-const css = require('template-css')
 const hyperx = require('hyperx')
 const html = hyperx(h)
+const css = require('template-css')
+
+const Editor = require('./Editor')
+const Preview = require('./Preview')
 
 const styles = css`
   html {
@@ -34,6 +35,8 @@ const styles = css`
     border: 0;
     font-family: inherit;
     font-size: inherit;
+    padding: 0;
+    margin: 0;
   }
 
   .tent-newDoc {
@@ -57,6 +60,18 @@ const styles = css`
     justify-content: center;
     height: 100vh;
     overflow: hidden;
+    position: relative;
+  }
+
+  .drag .tent-main:before {
+    content: '';
+    background-color: rgba(68, 68, 68, 0.6);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 5px dashed #ccc;
   }
 
   .tent-list {
@@ -88,6 +103,7 @@ const styles = css`
     text-align: left;
     outline: none;
     font-size: 12px;
+    border-radius: 0;
   }
 
   .tent-panels {
@@ -140,11 +156,18 @@ class Tent extends Component {
         </ul>
 
         <div class="tent-editor">
-          ${h(Editor, {doc: state.doc, onChange: onEditorChange, onCreate: onEditorCreate})}
+          ${h(Editor, {
+            doc: state.doc, 
+            onChange: onEditorChange, 
+            onCreate: onEditorCreate,
+            appendUploadResult: actions.appendUploadResult
+          })}
         </div>
 
         <div class="tent-preview">
-          ${h(Preview, {doc: state.doc})}
+          ${h(Preview, {
+            doc: state.doc
+          })}
         </div>
       </main>
     `

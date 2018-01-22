@@ -1,11 +1,12 @@
+const { h, Component, render } = require('preact')
+const hyperx = require('hyperx')
+const html = hyperx(h)
+const css = require('template-css')
+
 const Tent = require('./components/Tent')
 const dragDrop = require('drag-drop')
 const api = require('./client-api.js')
 const debounce = require('lodash.debounce')
-const css = require('template-css')
-const { h, Component, render } = require('preact')
-const hyperx = require('hyperx')
-const html = hyperx(h)
 
 // TODO: encryption
 // https://www.webpackbin.com/bins/-Kf39BfshtwP3rIZVuEV
@@ -63,19 +64,33 @@ const actions = {
   saveFile: (data) => {
     log('Saving file')
     api.saveFile(data, (err, res) => {
-      if (err) console.log(err)
-      console.log(res.data)
-      const type = res.data.type.split('/')[0]
-      
-      let insertContent
-      if (type === 'image') {
-        insertContent = `![](${res.data.url})`
-      } else {
-        insertContent = res.data.url
+      if (err) {
+        console.log(err)
+        return
       }
-
-      insertAtCaret(editorEl, insertContent)
+      // console.log(res.data)
+      actions.appendUploadResult(res)
     })
+  },
+  appendUploadResult: (res) => {
+    const type = res.data && res.data.type
+    const url = res.data && res.data.url
+
+    if (!url) {
+      console.log('No url in response')
+      return
+    }
+
+    let insertContent
+    if (type.split('/')[0] === 'image') {
+      insertContent = `![](${res.data.url})`
+    } else {
+      insertContent = res.data.url
+    }
+
+    log(`Inserting: ${insertContent}`)
+
+    insertAtCaret(editorEl, insertContent)
   },
   loadDocList: (data) => {
     return new Promise((resolve, reject) => {
@@ -94,7 +109,6 @@ const actions = {
         if (err) reject(err)
         log('Loaded doc: ' + docId)
         actions.updateDoc({ doc: res.data, docId: docId })
-        actions.updateEditor()
         resolve(res)
       })
     })
@@ -127,6 +141,10 @@ const actions = {
       .then(actions.loadDocList)
       .then(() => actions.loadDoc(docId))
       .then(() => actions.toggleNewDocPopover(false))
+      .catch((err) => { 
+        console.log(err)
+        alert(`Error saving document: ${err}`)
+      })
   },
   saveState: (data) => {
     localStorage.setItem('tentState', JSON.stringify(state))
@@ -140,23 +158,23 @@ const actions = {
       docId = savedState.docId
     }
     return actions.loadDoc(docId)
-      .then(actions.updateEditor)
   }
 }
 
-let root = render(h(Tent, {state: state, actions: actions, update: update}), document.body)
+let root = render(h(Tent, {state: state, actions: actions, update: update}), document.getElementById('tent'))
 
 function update (patch) {
   state = Object.assign({}, state, patch)
-  render(h(Tent, {state: state, actions: actions, update: update}), document.body, root)
-  // root._component.setState(state)
+  render(h(Tent, {state: state, actions: actions, update: update}), document.getElementById('tent'), root)
 }
 
 function init () {
   log('Start like an animal!')
   update(state)
 
-  window.onbeforeunload = (ev) => actions.saveState()
+  window.onbeforeunload = (ev) => {
+    actions.saveState()
+  }
 
   dragDrop(document.body, (files) => {
     files.forEach((file) => {
@@ -164,7 +182,9 @@ function init () {
     })
   })
 
-  actions.loadDocList().then(actions.loadLastOpenDoc)
+  actions.loadDocList()
+    .then(actions.loadLastOpenDoc)
+    .catch((err) => console.log(err))
 }
 
 init()
