@@ -166,7 +166,8 @@ class Tent extends Component {
 
         <div class="tent-preview">
           ${h(Preview, {
-            doc: state.doc
+            doc: state.doc,
+            parseFrontmatter: true
           })}
         </div>
       </main>

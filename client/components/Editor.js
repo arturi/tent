@@ -100,7 +100,7 @@ class Editor extends Component {
       <div class="simpleEditor-wrap">
         <textarea class="simpleEditor-body" ref="${editorEl => { this.editorEl = editorEl } }" oninput="${this.props.onChange}" value="${this.props.doc}"></textarea>
         <div class="simpleEditor-toolbar">
-          Drag + drop to upload or <button class="simpleEditor-toolbarAction" type="button" onclick=${this.openUppyModal}>press to select files</button>
+          Drag + drop or <button class="simpleEditor-toolbarAction" type="button" onclick=${this.openUppyModal}>select files</button>
         </div>
       </div>
     `

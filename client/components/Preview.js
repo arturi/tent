@@ -99,14 +99,11 @@ class Preview extends Component {
 	render () {
     let element
 
-    let opts = this.props.opts || {}
-
-    if (opts.parseFrontmatter) {
+    if (this.props.parseFrontmatter) {
       const parsedDoc = fastmatter(this.props.doc)
       const attributes = parsedDoc.attributes || {}
       const title = attributes.title ? `<h1>${parsedDoc.attributes.title}</h1>` : ''
-
-      element = html`<div class="tent-mdBody" dangerouslySetInnerHTML={{ __html: title + md.render(parsedDoc.body) }}></div>`
+      element = html`<div class="tent-mdBody" dangerouslySetInnerHTML=${{ __html: title + md.render(parsedDoc.body) }}></div>`
     } else {
       element = html`<div class="tent-mdBody" dangerouslySetInnerHTML=${{ __html: md.render(this.props.doc) }}></div>`
     }
